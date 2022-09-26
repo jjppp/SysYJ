@@ -1,4 +1,12 @@
 package org.jjppp.type;
 
-public class VoidType implements Type {
+public final class VoidType implements BaseType {
+    private final static VoidType INSTANCE = new VoidType();
+
+    private VoidType() {
+    }
+
+    public static VoidType getInstance() {
+        return INSTANCE;
+    }
 }

@@ -10,18 +10,22 @@ import org.jjppp.ast.Binary;
 public final class BinCond extends Binary<Cond> implements Cond {
     private final Op op;
 
-    public BinCond(Op op, Cond lhs, Cond rhs) {
-        this.lhs = lhs;
-        this.rhs = rhs;
+    private BinCond(Op op, Cond lhs, Cond rhs) {
+        super(lhs, rhs);
         this.op = op;
+    }
+
+    public static BinCond of(Op op, Cond lhs, Cond rhs) {
+        return new BinCond(op, lhs, rhs);
+    }
+
+    @Override
+    public Op getOp() {
+        return op;
     }
 
     @Override
     public boolean isTrue() {
-        return false;
-    }
-
-    private enum Op {
-        AND, OR
+        throw new AssertionError("TODO");
     }
 }

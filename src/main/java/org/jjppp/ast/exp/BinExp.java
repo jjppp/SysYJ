@@ -6,13 +6,25 @@ import org.jjppp.runtime.Val;
 /**
  * Binary Exp
  */
-public final class BinExp extends Binary<Exp> implements Exp {
+public final class BinExp extends Binary<Exp> implements OpExp {
+    private final Op op;
+
+    private BinExp(Exp lhs, Exp rhs, Op op) {
+        super(lhs, rhs);
+        this.op = op;
+    }
+
+    public static BinExp of(Op op, Exp lhs, Exp rhs) {
+        return new BinExp(lhs, rhs, op);
+    }
+
     @Override
     public Val eval() {
         throw new AssertionError("TODO");
     }
 
-    private enum Op {
-        ADD, SUB, MUL, DIV, MOD
+    @Override
+    public Op getOp() {
+        return op;
     }
 }

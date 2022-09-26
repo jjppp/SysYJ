@@ -6,7 +6,7 @@ public final class Continue implements Stmt {
     private Continue() {
     }
 
-    public Continue getInstance() {
+    public static Continue getInstance() {
         return INSTANCE;
     }
 }

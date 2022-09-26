@@ -1,4 +1,9 @@
 package org.jjppp.type;
 
-public class ArrType implements Type {
+import java.util.List;
+
+public record ArrType(BaseType type, int dim, List<Integer> widths) implements Type {
+    public static ArrType of(BaseType type, int dim, List<Integer> widths) {
+        return new ArrType(type, dim, widths);
+    }
 }

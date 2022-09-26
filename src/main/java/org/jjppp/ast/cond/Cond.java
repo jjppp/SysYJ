@@ -7,4 +7,12 @@ package org.jjppp.ast.cond;
  */
 public interface Cond {
     boolean isTrue();
+
+    Op getOp();
+
+    enum Op {
+        LE, LT, GT, GE, NE, EQ,
+        AND, OR, NOT,
+        NZ, IZ
+    }
 }

@@ -1,7 +1,12 @@
 package org.jjppp.ast;
 
 public abstract class Binary<T> {
-    protected T lhs, rhs;
+    protected final T lhs, rhs;
+
+    protected Binary(T lhs, T rhs) {
+        this.lhs = lhs;
+        this.rhs = rhs;
+    }
 
     public T getLhs() {
         return lhs;

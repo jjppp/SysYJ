@@ -10,18 +10,22 @@ import org.jjppp.ast.exp.Exp;
 public final class RelCond extends Binary<Exp> implements Cond {
     private final Op op;
 
-    public RelCond(Op op, Exp lhs, Exp rhs) {
-        this.lhs = lhs;
-        this.rhs = rhs;
+    private RelCond(Op op, Exp lhs, Exp rhs) {
+        super(lhs, rhs);
         this.op = op;
+    }
+
+    public static RelCond of(Op op, Exp lhs, Exp rhs) {
+        return new RelCond(op, lhs, rhs);
+    }
+
+    @Override
+    public Op getOp() {
+        return op;
     }
 
     @Override
     public boolean isTrue() {
-        return false;
-    }
-
-    private enum Op {
-        LE, LT, GT, GE, NE, EQ
+        throw new AssertionError("TODO");
     }
 }

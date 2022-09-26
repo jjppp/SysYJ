@@ -6,7 +6,7 @@ public final class Break implements Stmt {
     private Break() {
     }
 
-    public Break getInstance() {
+    public static Break getInstance() {
         return INSTANCE;
     }
 }

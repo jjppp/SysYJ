@@ -4,31 +4,22 @@ grammar SysY;
 package org.jjppp.parser;
 }
 
-compUnit : ( decl | funcDef )*;
+compUnit : decl*;
 
-decl : constDecl | varDecl;
-
-constDecl : CONST bType constDef (',' constDef)* ';';
+decl
+    : CONST bType def (',' def)* ';'                    #constDecl
+    | bType def (',' def)* ';'                          #varDecl
+    | funcType ID '(' funcFParams? ')' block            #funcDecl
+    ;
 
 bType : INT | FLOAT;
 
-constDef : ID ('[' exp ']')* '=' constInitVal;
-
-constInitVal
-    : exp
-    | '{' (constInitVal (',' constInitVal)*)? '}'
-    ;
-
-varDecl : bType varDef (',' varDef)* ';';
-
-varDef : ID ('[' exp ']')* ('=' initVal)?;
+def : ID ('[' exp ']')* ('=' initVal)?;
 
 initVal
-    : '{' (initVal (',' initVal)*)? '}'
-    | exp
+    : '{' (initVal (',' initVal)*)? '}'                 #arrInitVal
+    | exp                                               #expInitVal
     ;
-
-funcDef : funcType ID '(' funcFParams? ')' block;
 
 funcType
     : VOID
@@ -44,7 +35,10 @@ funcRParams : exp (',' exp)*;
 
 block : '{' blockItem* '}';
 
-blockItem : decl | stmt;
+blockItem
+    : decl                                              #declItem
+    | stmt                                              #stmtItem
+    ;
 
 stmt
     : RETURN exp? ';'                                   #returnStmt
@@ -54,39 +48,39 @@ stmt
     | exp ';'                                           #expStmt
     | ';'                                               #emptyStmt
     | IF '(' cond ')' stmt                              #iftStmt
-    | IF '(' cond ')' stmt ELSE stmt                    #ifteStmt
+    | IF '(' cond ')' sTru=stmt ELSE sFls=stmt          #ifteStmt
     | WHILE '(' cond ')' stmt                           #whileStmt
     | block                                             #blockStmt
     ;
 
 lVal
-    : ID
-    | ID ('[' exp ']')+
+    : ID                                                #idLVal
+    | ID ('[' exp ']')+                                 #arrLVal
     ;
 
 number
-    : DECIMAL_CONST
-    | HEXADECIMAL_CONST
-    | OCTAL_CONST
-    | FLOAT_CONST
+    : DECIMAL_CONST                                     #decNum
+    | HEXADECIMAL_CONST                                 #hexNum
+    | OCTAL_CONST                                       #octNum
+    | FLOAT_CONST                                       #fltNum
     ;
 
 exp
-    : exp (MUL | DIV | MOD) exp                         #mulExp
-    | exp (ADD | SUB) exp                               #addExp
+    : lhs=exp op=(MUL | DIV | MOD) rhs=exp              #mulExp
+    | lhs=exp op=(ADD | SUB) rhs=exp                    #addExp
     | '(' exp ')'                                       #bracketExp
     | lVal                                              #lValExp
-    | number                                            #unaryExp
-    | ID '(' funcRParams? ')'                           #funExp
-    | (ADD | SUB) exp                                   #unaryExp
+    | number                                            #valExp
+    | fun=ID '(' funcRParams? ')'                       #funExp
+    | op=(ADD | SUB) exp                                #unaryExp
     ;
 
 cond
-    : NOT? exp                                          #rawCond
-    | exp (LE | LT | GE | GT) exp                       #relCond
-    | exp (EQ | NE) exp                                 #eqCond
-    | NOT cond                                          #unaryCond
-    | cond (AND | OR) cond                              #binaryCond
+    : op=NOT? exp                                       #rawCond
+    | lhs=exp op=(LE | LT | GE | GT) rhs=exp            #relCond
+    | lhs=exp op=(EQ | NE) rhs=exp                      #eqCond
+    | op=NOT cond                                       #unaryCond
+    | lhs=cond op=(AND | OR) rhs=cond                   #binaryCond
     ;
 
 /*****************************************************************/
