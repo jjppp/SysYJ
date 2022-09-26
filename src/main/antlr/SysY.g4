@@ -8,72 +8,60 @@ compUnit : ( decl | funcDef )*;
 
 decl : constDecl | varDecl;
 
-constDecl : 'const' bType constDef (',' constDef) ';';
+constDecl : CONST bType constDef (',' constDef)* ';';
 
-bType : 'int' | 'float';
+bType : INT | FLOAT;
 
-constDef : ID ('[' constExp ']') '=' constInitVal;
+constDef : ID ('[' exp ']')* '=' constInitVal;
 
 constInitVal
-    : constExp
-    | '{' '}'
-    | '{' constInitVal (',' constInitVal) '}'
+    : exp
+    | '{' (constInitVal (',' constInitVal)*)? '}'
     ;
 
-varDecl : bType varDef (',' varDef) ';';
+varDecl : bType varDef (',' varDef)* ';';
 
-varDef
-    : ID ('[' constExp ']')*
-    | ID ('[' constExp ']')* '=' initVal
-    ;
+varDef : ID ('[' exp ']')* ('=' initVal)?;
 
 initVal
-    : '{' initVal (',' initVal)* '}'
-    | '{' '}'
+    : '{' (initVal (',' initVal)*)? '}'
     | exp
     ;
 
-funcDef
-    : funcType ID '(' ')' block
-    | funcType ID '(' funcFParam (',' funcFParam)* ')' block
+funcDef : funcType ID '(' funcFParams? ')' block;
+
+funcType
+    : VOID
+    | INT
+    | FLOAT
     ;
 
-funcType : 'void' | 'int' | 'float';
+funcFParam : bType ID ('[' ']' ('[' exp ']')*)?;
 
-funcFParam
-    : bType ID
-    | bType ID '[' ']' ('[' exp ']')*;
+funcFParams : funcFParam (',' funcFParam)*;
+
+funcRParams : exp (',' exp)*;
 
 block : '{' blockItem* '}';
 
 blockItem : decl | stmt;
 
 stmt
-    : lVal '=' exp ';'
-    | ';'
-    | exp ';'
-    | block
-    | 'if' '(' cond ')' stmt
-    | 'if' '(' cond ')' stmt 'else' stmt
-    | 'while' '(' cond ')' stmt
-    | 'break' ';'
-    | 'continue' ';'
-    | 'return' ?exp ';'
+    : RETURN exp? ';'                                   #returnStmt
+    | lVal '=' exp ';'                                  #assignStmt
+    | CONTINUE ';'                                      #continStmt
+    | BREAK ';'                                         #breakStmt
+    | exp ';'                                           #expStmt
+    | ';'                                               #emptyStmt
+    | IF '(' cond ')' stmt                              #iftStmt
+    | IF '(' cond ')' stmt ELSE stmt                    #ifteStmt
+    | WHILE '(' cond ')' stmt                           #whileStmt
+    | block                                             #blockStmt
     ;
-
-exp : addExp;
-
-cond : lOrExp;
 
 lVal
     : ID
     | ID ('[' exp ']')+
-    ;
-
-primaryExp
-    : '(' exp ')'
-    | lVal
-    | number
     ;
 
 number
@@ -83,30 +71,23 @@ number
     | FLOAT_CONST
     ;
 
-unaryExp
-    : primaryExp
-    | ID '(' funcRParams ')'
-    | ('+' | '-' | '!') unaryExp
+exp
+    : exp (MUL | DIV | MOD) exp                         #mulExp
+    | exp (ADD | SUB) exp                               #addExp
+    | '(' exp ')'                                       #bracketExp
+    | lVal                                              #lValExp
+    | number                                            #unaryExp
+    | ID '(' funcRParams? ')'                           #funExp
+    | (ADD | SUB) exp                                   #unaryExp
     ;
 
-funcRParams
-    : exp (',' exp)*
-    |
+cond
+    : NOT? exp                                          #rawCond
+    | exp (LE | LT | GE | GT) exp                       #relCond
+    | exp (EQ | NE) exp                                 #eqCond
+    | NOT cond                                          #unaryCond
+    | cond (AND | OR) cond                              #binaryCond
     ;
-
-mulExp : unaryExp | mulExp ('*' | '/' | '%') unaryExp;
-
-addExp : mulExp | addExp ('+' | '−') mulExp;
-
-relExp : addExp | relExp ('<' | '>' | '<=' | '>=') addExp;
-
-eqExp : relExp | eqExp ('==' | '!=') relExp;
-
-lAndExp : eqExp | lAndExp '&&' eqExp;
-
-lOrExp : lAndExp | lOrExp '||' lAndExp;
-
-constExp: addExp;
 
 /*****************************************************************/
 
@@ -115,11 +96,34 @@ fragment DECIMAL_DIGIT      : [0-9];
 fragment OCTAL_DIGIT        : [0-7];
 fragment HEXADECIMAL_DIGIT  : [0-9a-fA-F];
 
-FUNC_TYPE
-    : 'void'
-    | 'float'
-    | 'int'
-    ;
+// keywords
+INT                 : 'int';
+FLOAT               : 'float';
+VOID                : 'void';
+IF                  : 'if';
+ELSE                : 'else';
+WHILE               : 'while';
+BREAK               : 'break';
+CONTINUE            : 'continue';
+RETURN              : 'return';
+CONST               : 'const';
+
+// operators
+ADD                 : '+';
+SUB                 : '-';
+MUL                 : '*';
+DIV                 : '/';
+MOD                 : '%';
+
+NOT                 : '!';
+AND                 : '&&';
+OR                  : '||';
+LE                  : '<=';
+LT                  : '<';
+GE                  : '>=';
+GT                  : '>';
+EQ                  : '==';
+NE                  : '!=';
 
 ID                  : [a-z_A-Z][a-z_A-Z0-9]*;
 HEXADECIMAL_CONST   : '0x' HEXADECIMAL_DIGIT+;
@@ -127,3 +131,5 @@ DECIMAL_CONST       : NONZERO_DIGIT DECIMAL_DIGIT*;
 OCTAL_CONST         : '0' | '0' OCTAL_DIGIT*;
 FLOAT_CONST         : [0-9]*'.'[0-9]*;
 WS                  : [\r\n\t ] -> skip;
+COMMENT             : '//' ~('\n')* '\n' -> skip;
+BLOCK_COMMENT       : '/*' .*? '*/' -> skip;
