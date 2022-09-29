@@ -1,0 +1,10 @@
+int a;
+
+int fun(int b, int c[]) {
+    return a+b*c[114][514];
+}
+
+int main() {
+    int c = fun(233);
+    return a;
+}
