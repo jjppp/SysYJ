@@ -9,4 +9,9 @@ public final class VoidType implements BaseType {
     public static VoidType getInstance() {
         return INSTANCE;
     }
+
+    @Override
+    public boolean isConst() {
+        return true;
+    }
 }

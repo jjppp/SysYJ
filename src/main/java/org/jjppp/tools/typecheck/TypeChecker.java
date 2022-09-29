@@ -1,4 +1,4 @@
-package org.jjppp.tools.typechecker;
+package org.jjppp.tools.typecheck;
 
 import org.jjppp.parser.SysYBaseVisitor;
 import org.jjppp.type.Type;

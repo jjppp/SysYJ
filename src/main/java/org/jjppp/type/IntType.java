@@ -1,8 +1,13 @@
 package org.jjppp.type;
 
-public record IntType(boolean isConst) implements BaseType {
+public final class IntType implements BaseType {
     private final static IntType CONST = new IntType(true);
     private final static IntType NON_CONST = new IntType(false);
+    private final boolean isConst;
+
+    private IntType(boolean isConst) {
+        this.isConst = isConst;
+    }
 
     public static IntType of(boolean isConst) {
         if (isConst) {
@@ -18,5 +23,15 @@ public record IntType(boolean isConst) implements BaseType {
 
     public static IntType ofNonConst() {
         return NON_CONST;
+    }
+
+    @Override
+    public String toString() {
+        return "int";
+    }
+
+    @Override
+    public boolean isConst() {
+        return isConst;
     }
 }

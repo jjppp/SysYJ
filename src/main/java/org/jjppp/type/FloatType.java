@@ -1,8 +1,13 @@
 package org.jjppp.type;
 
-public record FloatType(boolean isConst) implements BaseType {
+public final class FloatType implements BaseType {
     private final static FloatType CONST = new FloatType(true);
     private final static FloatType NON_CONST = new FloatType(false);
+    private final boolean isConst;
+
+    private FloatType(boolean isConst) {
+        this.isConst = isConst;
+    }
 
     public static FloatType of(boolean isConst) {
         if (isConst) {
@@ -18,5 +23,15 @@ public record FloatType(boolean isConst) implements BaseType {
 
     public static FloatType ofNonConst() {
         return NON_CONST;
+    }
+
+    @Override
+    public String toString() {
+        return "float";
+    }
+
+    @Override
+    public boolean isConst() {
+        return isConst;
     }
 }

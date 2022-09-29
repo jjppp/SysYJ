@@ -1,6 +1,6 @@
 package org.jjppp.runtime;
 
-public record Int(int value) implements BaseVal {
+public record Int(Integer value) implements BaseVal {
     public static Int from(int value) {
         return new Int(value);
     }
@@ -22,6 +22,11 @@ public record Int(int value) implements BaseVal {
     }
 
     @Override
+    public String toString() {
+        return value.toString();
+    }
+
+    @Override
     public int compareTo(Val val) {
         throw new AssertionError("TODO");
     }
@@ -29,5 +34,35 @@ public record Int(int value) implements BaseVal {
     @Override
     public int toInt() {
         return value;
+    }
+
+    @Override
+    public Val add(Val rhs) {
+        return Int.from(this.value + ((Int) rhs).value);
+    }
+
+    @Override
+    public Val sub(Val rhs) {
+        return Int.from(this.value - ((Int) rhs).value);
+    }
+
+    @Override
+    public Val mul(Val rhs) {
+        return Int.from(this.value * ((Int) rhs).value);
+    }
+
+    @Override
+    public Val div(Val rhs) {
+        return Int.from(this.value / ((Int) rhs).value);
+    }
+
+    @Override
+    public Val mod(Val rhs) {
+        return Int.from(this.value % ((Int) rhs).value);
+    }
+
+    @Override
+    public Val neg() {
+        return Int.from(-value);
     }
 }

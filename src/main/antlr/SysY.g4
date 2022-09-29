@@ -27,7 +27,10 @@ funcType
     | FLOAT
     ;
 
-funcFParam : bType ID ('[' ']' ('[' exp ']')*)?;
+funcFParam
+    : bType ID                                          #varFParam
+    | bType ID '[' ']' ('[' exp ']')*                   #arrFParam
+    ;
 
 funcFParams : funcFParam (',' funcFParam)*;
 

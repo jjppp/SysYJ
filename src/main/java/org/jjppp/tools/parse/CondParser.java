@@ -1,4 +1,4 @@
-package org.jjppp.tools.parser;
+package org.jjppp.tools.parse;
 
 import org.jjppp.ast.cond.*;
 import org.jjppp.ast.exp.Exp;

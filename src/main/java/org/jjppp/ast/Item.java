@@ -1,4 +1,4 @@
 package org.jjppp.ast;
 
-public interface Item {
+public interface Item extends ASTNode {
 }

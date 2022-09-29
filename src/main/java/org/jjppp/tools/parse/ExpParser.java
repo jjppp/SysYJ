@@ -1,9 +1,11 @@
-package org.jjppp.tools.parser;
+package org.jjppp.tools.parse;
 
-import org.jjppp.ast.Fun;
+import org.jjppp.ast.decl.Decl;
+import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.exp.*;
 import org.jjppp.parser.SysYParser;
-import org.jjppp.runtime.ArrVal;
+import org.jjppp.tools.symtab.SymEntry;
+import org.jjppp.tools.symtab.SymTab;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +28,13 @@ public final class ExpParser extends DefaultVisitor<Exp> {
 
     @Override
     public Exp visitLValExp(SysYParser.LValExpContext ctx) {
-        return LValParser.parse(ctx.lVal());
+        LVal lVal = LValParser.parse(ctx.lVal());
+        String name = lVal.getDecl().name();
+        SymEntry entry = SymTab.get(name);
+        if (entry.isConst()) {
+            return ValExp.of(lVal.constEval());
+        }
+        return lVal;
     }
 
     @Override
@@ -38,8 +46,8 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     public Exp visitUnaryExp(SysYParser.UnaryExpContext ctx) {
         return UnExp.of(
                 switch (ctx.op.getText().charAt(0)) {
-                    case '+' -> OpExp.Op.POS;
-                    case '-' -> OpExp.Op.NEG;
+                    case '+' -> OpExp.UnOp.POS;
+                    case '-' -> OpExp.UnOp.NEG;
                     default -> throw new ParserException("unknown op");
                 },
                 parse(ctx.exp()));
@@ -54,9 +62,9 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     public Exp visitAddExp(SysYParser.AddExpContext ctx) {
         return BinExp.of(
                 switch (ctx.op.getText().charAt(0)) {
-                    case '+' -> OpExp.Op.ADD;
-                    case '-' -> OpExp.Op.SUB;
-                    default -> throw new ParserException("unknown operator");
+                    case '+' -> OpExp.BiOp.ADD;
+                    case '-' -> OpExp.BiOp.SUB;
+                    default -> throw new ParserException("unknown op");
                 },
                 parse(ctx.lhs),
                 parse(ctx.rhs));
@@ -66,10 +74,10 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     public Exp visitMulExp(SysYParser.MulExpContext ctx) {
         return BinExp.of(
                 switch (ctx.op.getText().charAt(0)) {
-                    case '*' -> OpExp.Op.MUL;
-                    case '/' -> OpExp.Op.DIV;
-                    case '%' -> OpExp.Op.MOD;
-                    default -> throw new ParserException("unknown operator");
+                    case '*' -> OpExp.BiOp.MUL;
+                    case '/' -> OpExp.BiOp.DIV;
+                    case '%' -> OpExp.BiOp.MOD;
+                    default -> throw new ParserException("unknown op");
                 },
                 parse(ctx.lhs),
                 parse(ctx.rhs));
@@ -77,12 +85,17 @@ public final class ExpParser extends DefaultVisitor<Exp> {
 
     @Override
     public FunExp visitFunExp(SysYParser.FunExpContext ctx) {
+        String name = ctx.fun.getText();
         List<Exp> args = Optional.ofNullable(ctx.funcRParams())
                 .map(SysYParser.FuncRParamsContext::exp)
                 .orElse(List.of())
                 .stream().map(ExpParser::parse)
                 .collect(Collectors.toList());
-        return FunExp.of(Fun.of(ctx.fun.getText()), args);
+        Decl decl = SymTab.get(name).getDecl();
+        if (decl instanceof FunDecl funDecl) {
+            return FunExp.of(funDecl, args);
+        }
+        throw new ParserException("undefined symbol " + name);
     }
 
     @Override
@@ -97,6 +110,6 @@ public final class ExpParser extends DefaultVisitor<Exp> {
         List<Exp> exps = ctx.initVal().stream()
                 .map(ExpParser::parse)
                 .toList();
-        return ValExp.of(ArrVal.of(exps));
+        return ArrValExp.of(exps);
     }
 }

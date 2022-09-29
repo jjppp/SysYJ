@@ -1,5 +1,6 @@
 package org.jjppp.ast.cond;
 
+import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.Unary;
 
 public final class UnCond extends Unary<Cond> implements Cond {
@@ -12,6 +13,11 @@ public final class UnCond extends Unary<Cond> implements Cond {
 
     public static UnCond of(Op op, Cond sub) {
         return new UnCond(op, sub);
+    }
+
+    @Override
+    public <R> R accept(ASTVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override

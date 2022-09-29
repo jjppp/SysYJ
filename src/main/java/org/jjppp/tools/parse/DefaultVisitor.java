@@ -1,4 +1,4 @@
-package org.jjppp.tools.parser;
+package org.jjppp.tools.parse;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -58,7 +58,12 @@ public class DefaultVisitor<T> implements SysYVisitor<T> {
     }
 
     @Override
-    public T visitFuncFParam(SysYParser.FuncFParamContext ctx) {
+    public T visitVarFParam(SysYParser.VarFParamContext ctx) {
+        return visitDefault();
+    }
+
+    @Override
+    public T visitArrFParam(SysYParser.ArrFParamContext ctx) {
         return visitDefault();
     }
 

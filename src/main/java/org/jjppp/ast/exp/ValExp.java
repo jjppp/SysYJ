@@ -1,5 +1,6 @@
 package org.jjppp.ast.exp;
 
+import org.jjppp.ast.ASTVisitor;
 import org.jjppp.runtime.Val;
 
 /**
@@ -13,7 +14,12 @@ public record ValExp(Val val) implements Exp {
     }
 
     @Override
-    public Val eval() {
+    public <R> R accept(ASTVisitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Val constEval() {
         return val;
     }
 }

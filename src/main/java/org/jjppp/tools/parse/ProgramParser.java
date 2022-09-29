@@ -1,4 +1,4 @@
-package org.jjppp.tools.parser;
+package org.jjppp.tools.parse;
 
 import org.jjppp.ast.Program;
 import org.jjppp.ast.decl.Decl;

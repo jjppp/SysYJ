@@ -1,7 +1,5 @@
 package org.jjppp.runtime;
 
-import org.jjppp.ast.exp.Exp;
-
 import java.util.List;
 
 /**
@@ -9,8 +7,8 @@ import java.util.List;
  *
  * @param exps
  */
-public record ArrVal(List<Exp> exps) implements Val {
-    public static ArrVal of(List<Exp> exps) {
+public record ArrVal(List<Val> exps) implements Val {
+    public static ArrVal of(List<Val> exps) {
         return new ArrVal(exps);
     }
 
