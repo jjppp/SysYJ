@@ -9,7 +9,9 @@ public interface OpExp extends Exp {
     Op getOp();
 
     enum BiOp implements BinaryOperator<Val>, Op {
-        ADD, SUB, MUL, DIV, MOD;
+        ADD, SUB, MUL, DIV, MOD,
+        LE, LT, GE, GT, NE, EQ,
+        AND, OR;
 
         @Override
         public Val apply(Val lhs, Val rhs) {
@@ -25,13 +27,16 @@ public interface OpExp extends Exp {
     }
 
     enum UnOp implements UnaryOperator<Val>, Op {
-        NEG, POS;
+        NEG, POS,
+        NOT,
+        IZ, NZ;
 
         @Override
         public Val apply(Val val) {
             return switch (this) {
                 case NEG -> val.neg();
                 case POS -> val;
+                default -> throw new AssertionError("TODO");
             };
         }
     }

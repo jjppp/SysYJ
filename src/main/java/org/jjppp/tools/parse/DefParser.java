@@ -1,57 +1,83 @@
 package org.jjppp.tools.parse;
 
+import org.jjppp.ast.Item;
 import org.jjppp.ast.decl.ArrDecl;
-import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.Exp;
+import org.jjppp.ast.stmt.Assign;
 import org.jjppp.parser.SysYParser;
 import org.jjppp.runtime.Val;
-import org.jjppp.tools.symtab.SymEntry;
 import org.jjppp.tools.symtab.SymTab;
 import org.jjppp.type.ArrType;
 import org.jjppp.type.BaseType;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public final class DefParser extends DefaultVisitor<Decl> {
+public final class DefParser extends DefaultVisitor<List<Item>> {
     private final BaseType type;
 
     private DefParser(BaseType type) {
         this.type = type;
     }
 
-    public static Decl parse(SysYParser.DefContext ctx, BaseType type) {
+    public static List<Item> parse(SysYParser.DefContext ctx, BaseType type) {
         return ctx.accept(new DefParser(type));
     }
 
     @Override
-    public Decl visitDef(SysYParser.DefContext ctx) {
+    public List<Item> visitDef(SysYParser.DefContext ctx) {
         Objects.requireNonNull(ctx.exp());
         String name = ctx.ID().getText();
 
-        Decl result;
-
+        Exp defValExp = Optional.ofNullable(ctx.initVal())
+                .map(ExpParser::parse)
+                .orElse(null);
         if (ctx.exp().isEmpty()) { // var
-            Exp defVal = Optional.ofNullable(ctx.initVal())
-                    .map(ExpParser::parse)
-                    .orElse(null);
-            result = VarDecl.of(name, type, defVal);
+            VarDecl varDecl = VarDecl.of(name, type);
+            if (varDecl.isConst()) {
+                Val defVal = Optional.ofNullable(defValExp)
+                        .map(Exp::constEval)
+                        .orElse(null);
+                SymTab.add(varDecl, defVal);
+                return Collections.emptyList();
+            } else {
+                if (SymTab.isGlobal()) { // global
+                    if (defValExp == null) {
+                        SymTab.add(varDecl, null);
+                        return new ArrayList<>(List.of(varDecl));
+                    }
+                    throw new AssertionError("TODO");
+                } else { // local
+                    List<Item> result = new ArrayList<>(List.of(varDecl));
+                    SymTab.add(varDecl, null);
+                    if (defValExp != null) {
+                        // type id = exp; => type id; id = exp;
+                        result.add(Assign.of(varDecl, defValExp));
+                    }
+                    return result;
+                }
+            }
         } else { // arr
-            Val defVal = Optional.ofNullable(ctx.initVal())
-                    .map(ExpParser::parse)
-                    .map(Exp::constEval)
-                    .orElse(null);
             List<Integer> widths = ctx.exp().stream()
                     .map(ExpParser::parse)
                     .map(Exp::constEval)
                     .map(Val::toInt)
                     .collect(Collectors.toList());
-            result = ArrDecl.of(name, ArrType.of(type, widths.size(), widths, type.isConst()), defVal);
+            ArrDecl arrDecl = ArrDecl.of(name, ArrType.of(type, widths));
+            if (arrDecl.isConst()) {
+                Val defVal = Optional.ofNullable(defValExp)
+                        .map(Exp::constEval)
+                        .orElse(null);
+                SymTab.add(arrDecl, defVal);
+                return Collections.emptyList();
+            } else {
+                if (defValExp == null) {
+                    SymTab.add(arrDecl, null);
+                    return Collections.emptyList();
+                }
+                throw new AssertionError("TODO");
+            }
         }
-        SymTab.add(name, SymEntry.from(result));
-        return result;
     }
 }

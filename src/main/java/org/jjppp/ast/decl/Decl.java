@@ -8,5 +8,9 @@ public interface Decl extends Item {
 
     Type type();
 
+    default int size() {
+        return type().size();
+    }
+
     boolean isConst();
 }

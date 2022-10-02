@@ -1,10 +1,10 @@
 package org.jjppp.ast.stmt;
 
 import org.jjppp.ast.ASTVisitor;
-import org.jjppp.ast.cond.Cond;
+import org.jjppp.ast.exp.Exp;
 
-public record If(Cond cond, Stmt sTru) implements Stmt {
-    public static If of(Cond cond, Stmt sTru) {
+public record If(Exp cond, Stmt sTru) implements Stmt {
+    public static If of(Exp cond, Stmt sTru) {
         return new If(cond, sTru);
     }
 

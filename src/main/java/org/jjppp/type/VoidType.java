@@ -11,6 +11,16 @@ public final class VoidType implements BaseType {
     }
 
     @Override
+    public String toString() {
+        return "void";
+    }
+
+    @Override
+    public int size() {
+        return 0;
+    }
+
+    @Override
     public boolean isConst() {
         return true;
     }

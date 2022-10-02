@@ -1,9 +1,5 @@
 package org.jjppp.ast;
 
-import org.jjppp.ast.cond.BinCond;
-import org.jjppp.ast.cond.RawCond;
-import org.jjppp.ast.cond.RelCond;
-import org.jjppp.ast.cond.UnCond;
 import org.jjppp.ast.decl.ArrDecl;
 import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.decl.VarDecl;
@@ -11,55 +7,87 @@ import org.jjppp.ast.exp.*;
 import org.jjppp.ast.stmt.*;
 
 public interface ASTVisitor<R> {
-    default R visitDefault(ASTNode node) {
+    default R visitDefault(ASTNode ignore) {
         throw new AssertionError("TODO");
     }
 
-    R visit(BinCond cond);
+    default R visit(ArrDecl decl) {
+        return visitDefault(decl);
+    }
 
-    R visit(UnCond cond);
+    default R visit(VarDecl decl) {
+        return visitDefault(decl);
+    }
 
-    R visit(RawCond cond);
+    default R visit(FunDecl decl) {
+        return visitDefault(decl);
+    }
 
-    R visit(RelCond cond);
+    default R visit(ArrAccExp exp) {
+        return visitDefault(exp);
+    }
 
-    R visit(ArrDecl decl);
+    default R visit(ArrValExp exp) {
+        return visitDefault(exp);
+    }
 
-    R visit(VarDecl decl);
+    default R visit(BinExp exp) {
+        return visitDefault(exp);
+    }
 
-    R visit(FunDecl decl);
+    default R visit(FunExp exp) {
+        return visitDefault(exp);
+    }
 
-    R visit(ArrAccExp exp);
+    default R visit(UnExp exp) {
+        return visitDefault(exp);
+    }
 
-    R visit(ArrValExp exp);
+    default R visit(ValExp exp) {
+        return visitDefault(exp);
+    }
 
-    R visit(BinExp exp);
+    default R visit(VarExp exp) {
+        return visitDefault(exp);
+    }
 
-    R visit(FunExp exp);
+    default R visit(Assign stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(UnExp exp);
+    default R visit(Block stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(ValExp exp);
+    default R visit(Break stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(VarExp exp);
+    default R visit(Continue stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(Assign stmt);
+    default R visit(Empty stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(Block stmt);
+    default R visit(ExpStmt stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(Break stmt);
+    default R visit(If stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(Continue stmt);
+    default R visit(Ife stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(Empty stmt);
+    default R visit(Return stmt) {
+        return visitDefault(stmt);
+    }
 
-    R visit(ExpStmt stmt);
-
-    R visit(If stmt);
-
-    R visit(Ife stmt);
-
-    R visit(Return stmt);
-
-    R visit(While stmt);
+    default R visit(While stmt) {
+        return visitDefault(stmt);
+    }
 }

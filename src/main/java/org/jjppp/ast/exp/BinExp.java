@@ -2,6 +2,8 @@ package org.jjppp.ast.exp;
 
 import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.Binary;
+import org.jjppp.ast.decl.VarDecl;
+import org.jjppp.runtime.Int;
 import org.jjppp.runtime.Val;
 
 /**
@@ -17,6 +19,14 @@ public final class BinExp extends Binary<Exp> implements OpExp {
 
     public static BinExp of(BiOp op, Exp lhs, Exp rhs) {
         return new BinExp(lhs, rhs, op);
+    }
+
+    public static BinExp of(BiOp op, VarDecl lhs, VarDecl rhs) {
+        return new BinExp(VarExp.of(lhs), VarExp.of(rhs), op);
+    }
+
+    public static BinExp of(BiOp op, VarDecl lhs, int rhs) {
+        return new BinExp(VarExp.of(lhs), ValExp.of(Int.from(rhs)), op);
     }
 
     @Override

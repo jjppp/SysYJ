@@ -26,6 +26,11 @@ public final class FloatType implements BaseType {
     }
 
     @Override
+    public int size() {
+        return 4;
+    }
+
+    @Override
     public String toString() {
         return "float";
     }

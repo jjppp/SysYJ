@@ -1,10 +1,10 @@
 package org.jjppp.ast.stmt;
 
 import org.jjppp.ast.ASTVisitor;
-import org.jjppp.ast.cond.Cond;
+import org.jjppp.ast.exp.Exp;
 
-public record While(Cond cond, Stmt body) implements Stmt {
-    public static While of(Cond cond, Stmt body) {
+public record While(Exp cond, Stmt body) implements Stmt {
+    public static While of(Exp cond, Stmt body) {
         return new While(cond, body);
     }
 

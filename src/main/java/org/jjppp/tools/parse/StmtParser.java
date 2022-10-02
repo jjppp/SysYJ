@@ -78,8 +78,7 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
     public Block visitBlockStmt(SysYParser.BlockStmtContext ctx) {
         List<Item> items = ctx.block().blockItem().stream()
                 .map(ItemParser::parse)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .flatMap(Collection::stream).collect(Collectors.toList());
         return Block.of(items);
     }
 }

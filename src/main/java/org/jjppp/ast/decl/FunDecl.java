@@ -50,6 +50,11 @@ public final class FunDecl implements Decl {
     }
 
     @Override
+    public int size() {
+        throw new RuntimeException("Fun size()");
+    }
+
+    @Override
     public <R> R accept(ASTVisitor<R> visitor) {
         return visitor.visit(this);
     }

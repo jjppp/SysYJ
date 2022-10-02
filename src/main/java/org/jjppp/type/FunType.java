@@ -15,6 +15,11 @@ public record FunType(BaseType retType, List<Type> argTypes) implements Type {
     }
 
     @Override
+    public int size() {
+        throw new AssertionError("Fun size()");
+    }
+
+    @Override
     public boolean isConst() {
         return false;
     }

@@ -9,7 +9,6 @@ import org.jjppp.ast.exp.Exp;
 import org.jjppp.ast.stmt.Block;
 import org.jjppp.parser.SysYParser;
 import org.jjppp.runtime.Val;
-import org.jjppp.tools.symtab.SymEntry;
 import org.jjppp.tools.symtab.SymTab;
 import org.jjppp.type.*;
 
@@ -18,21 +17,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class DeclParser extends DefaultVisitor<List<Decl>> {
+public final class DeclParser extends DefaultVisitor<List<Item>> {
     private final static DeclParser INSTANCE = new DeclParser();
 
     private DeclParser() {
     }
 
-    public static List<Decl> parse(SysYParser.DeclContext ctx) {
+    public static List<Item> parse(SysYParser.DeclContext ctx) {
         return ctx.accept(INSTANCE);
     }
 
-    public static List<Decl> parse(SysYParser.FuncFParamsContext ctx) {
+    public static List<Item> parse(SysYParser.FuncFParamsContext ctx) {
         return ctx.accept(INSTANCE);
     }
 
-    public static List<Decl> parse(SysYParser.FuncFParamContext ctx) {
+    public static List<Item> parse(SysYParser.FuncFParamContext ctx) {
         return ctx.accept(INSTANCE);
     }
 
@@ -54,31 +53,37 @@ public final class DeclParser extends DefaultVisitor<List<Decl>> {
     }
 
     @Override
-    public List<Decl> visitConstDecl(SysYParser.ConstDeclContext ctx) {
+    public List<Item> visitConstDecl(SysYParser.ConstDeclContext ctx) {
         return ctx.def().stream()
                 .map(x -> DefParser.parse(x, parseType(ctx.bType(), true)))
+                .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<Decl> visitVarDecl(SysYParser.VarDeclContext ctx) {
+    public List<Item> visitVarDecl(SysYParser.VarDeclContext ctx) {
+        BaseType type = parseType(ctx.bType(), false);
         return ctx.def().stream()
-                .map(x -> DefParser.parse(x, parseType(ctx.bType(), false)))
+                .map(x -> DefParser.parse(x, type))
+                .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<Decl> visitFuncDecl(SysYParser.FuncDeclContext ctx) {
+    public List<Item> visitFuncDecl(SysYParser.FuncDeclContext ctx) {
         String name = ctx.ID().getText();
-        List<Decl> params = ctx.funcFParams() == null
-                ? Collections.emptyList()
-                : DeclParser.parse(ctx.funcFParams());
+        List<Decl> params = ctx.funcFParams() == null ?
+                Collections.emptyList() :
+                DeclParser.parse(ctx.funcFParams()).stream()
+                        .map(Decl.class::cast)
+                        .collect(Collectors.toList());
         BaseType retType = parseType(ctx.funcType());
         FunDecl funDecl = FunDecl.of(name, FunType.from(retType, params), params, null);
-        SymTab.add(name, SymEntry.from(funDecl));
+        SymTab.add(funDecl);
 
         SymTab.push();
-        params.forEach(decl -> SymTab.add(decl.name(), SymEntry.from(decl)));
+
+        params.forEach(decl -> SymTab.add(decl, null));
 
         List<Item> blockItems = ctx.block().blockItem().stream()
                 .map(ItemParser::parse)
@@ -91,7 +96,7 @@ public final class DeclParser extends DefaultVisitor<List<Decl>> {
     }
 
     @Override
-    public List<Decl> visitFuncFParams(SysYParser.FuncFParamsContext ctx) {
+    public List<Item> visitFuncFParams(SysYParser.FuncFParamsContext ctx) {
         return ctx.funcFParam().stream()
                 .map(DeclParser::parse)
                 .flatMap(List::stream)
@@ -99,20 +104,20 @@ public final class DeclParser extends DefaultVisitor<List<Decl>> {
     }
 
     @Override
-    public List<Decl> visitVarFParam(SysYParser.VarFParamContext ctx) {
+    public List<Item> visitVarFParam(SysYParser.VarFParamContext ctx) {
         String name = ctx.ID().getText();
         BaseType bType = parseType(ctx.bType(), false);
-        return List.of(VarDecl.of(name, bType, null));
+        return List.of(VarDecl.of(name, bType));
     }
 
     @Override
-    public List<Decl> visitArrFParam(SysYParser.ArrFParamContext ctx) {
+    public List<Item> visitArrFParam(SysYParser.ArrFParamContext ctx) {
         String name = ctx.ID().getText();
         BaseType bType = parseType(ctx.bType(), false);
         List<Integer> widths = ctx.exp().stream()
                 .map(ExpParser::parse)
                 .map(Exp::constEval)
                 .map(Val::toInt).toList();
-        return List.of(ArrDecl.of(name, ArrType.of(bType, widths.size(), widths, false), null));
+        return List.of(ArrDecl.of(name, ArrType.of(bType, widths)));
     }
 }

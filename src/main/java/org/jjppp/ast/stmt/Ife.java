@@ -1,10 +1,10 @@
 package org.jjppp.ast.stmt;
 
 import org.jjppp.ast.ASTVisitor;
-import org.jjppp.ast.cond.Cond;
+import org.jjppp.ast.exp.Exp;
 
-public record Ife(Cond cond, Stmt sTru, Stmt sFls) implements Stmt {
-    public static Ife of(Cond cond, Stmt sTru, Stmt sFls) {
+public record Ife(Exp cond, Stmt sTru, Stmt sFls) implements Stmt {
+    public static Ife of(Exp cond, Stmt sTru, Stmt sFls) {
         return new Ife(cond, sTru, sFls);
     }
 

@@ -26,6 +26,11 @@ public final class IntType implements BaseType {
     }
 
     @Override
+    public int size() {
+        return 4;
+    }
+
+    @Override
     public String toString() {
         return "int";
     }

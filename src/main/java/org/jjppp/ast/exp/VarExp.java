@@ -4,6 +4,7 @@ import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.runtime.Val;
+import org.jjppp.tools.symtab.SymTab;
 
 public record VarExp(VarDecl var) implements LVal {
     public static VarExp of(VarDecl var) {
@@ -17,7 +18,7 @@ public record VarExp(VarDecl var) implements LVal {
 
     @Override
     public Val constEval() {
-        return var.defValExp().orElseThrow().constEval();
+        return SymTab.getVal(var.name());
     }
 
     @Override

@@ -37,35 +37,36 @@ public final class ParserTest {
         assertEquals(Int.from(9), Int.fromOct("011"));
     }
 
-    @Test
-    void testDecl() {
-        fromFile("simple/decl.sy");
-    }
-
-    @Test
-    void testMaxFlow() {
-        fromFile("simple/maxflow.sy");
-    }
-
-    @Test
-    void testResolve() {
-        fromFile("simple/resolve.sy");
-    }
-
-    @Test
-    void testFib() {
-        Program program = fromFile("simple/fib.sy");
+    private void print(String filename) {
+        System.out.println(filename);
+        Program program = fromFile(filename);
         Print print = new Print(program);
         System.out.println(print.prettyPrint());
     }
 
     @Test
+    void testDecl() {
+        print("simple/decl.sy");
+    }
+
+    @Test
+    void testMaxFlow() {
+        print("simple/maxflow.sy");
+    }
+
+    @Test
+    void testResolve() {
+        print("simple/resolve.sy");
+    }
+
+    @Test
+    void testFib() {
+        print("simple/fib.sy");
+    }
+
+    @Test
     void testConst() {
         List<String> files = List.of("06_const_var_defn2.sy", "07_const_var_defn3.sy", "08_const_array_defn.sy");
-        for (String file : files) {
-            System.out.println(file);
-            Print print = new Print(fromFile("official/functional/" + file));
-            System.out.println(print.prettyPrint());
-        }
+        files.forEach(file -> print("official/functional/" + file));
     }
 }

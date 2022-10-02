@@ -77,20 +77,19 @@ int max_flow(int s, int t)
 int main()
 {
     int V, E;
-    V = getint();
-    E = getint();
+    V = 10;
+    E = 20;
     my_memset(size, 0, 10);
 
     while (E > 0) {
         int u, v;
-        u = getint();
-        v = getint();
-        int c = getint();
+        u = 4;
+        v = 5;
+        int c = 6;
         add_node(u, v, c);
         E = E - 1;
     }
 
-    putint(max_flow(1, V));
-    putch(10);
+    int ans = max_flow(1, V);
     return 0;
 }

@@ -4,11 +4,8 @@ import org.jjppp.ast.ASTNode;
 import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.Item;
 import org.jjppp.ast.Program;
-import org.jjppp.ast.cond.BinCond;
-import org.jjppp.ast.cond.RawCond;
-import org.jjppp.ast.cond.RelCond;
-import org.jjppp.ast.cond.UnCond;
 import org.jjppp.ast.decl.ArrDecl;
+import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.*;
@@ -55,11 +52,32 @@ public final class Print implements ASTVisitor<String> {
                 .orElseThrow();
     }
 
+    private String printArrAccIdx(List<Exp> exps) {
+        return exps.stream()
+                .map(this::print)
+                .reduce((x, y) -> x + "][" + y)
+                .orElse("");
+    }
+
+    private String printDecls(List<Decl> exps) {
+        return exps.stream()
+                .map(this::print)
+                .reduce((x, y) -> x + ", " + y)
+                .orElse("");
+    }
+
+    private String printWidths(List<Integer> widths) {
+        return widths.stream()
+                .map(Object::toString)
+                .reduce((x, y) -> x + "][" + y)
+                .orElse("");
+    }
+
     private String printExps(List<Exp> exps) {
         return exps.stream()
                 .map(this::print)
                 .reduce((x, y) -> x + ", " + y)
-                .orElseThrow();
+                .orElse("");
     }
 
     private String print(ASTNode node) {
@@ -71,13 +89,17 @@ public final class Print implements ASTVisitor<String> {
     }
 
     private String bracketOf(ASTNode cont) {
-        StringBuilder result = new StringBuilder(" {");
-        tabs += TAB_SIZE;
-        result.append(newline());
-        result.append(print(cont));
-        tabs -= TAB_SIZE;
-        result.append(newline());
-        return result.append("}").toString();
+        if (cont instanceof Block block) {
+            return print(block);
+        } else {
+            StringBuilder result = new StringBuilder(" {");
+            tabs += TAB_SIZE;
+            result.append(newline());
+            result.append(print(cont));
+            tabs -= TAB_SIZE;
+            result.append(newline());
+            return result.append("}").toString();
+        }
     }
 
     private String bracketOf(List<Item> items) {
@@ -91,35 +113,10 @@ public final class Print implements ASTVisitor<String> {
     }
 
     @Override
-    public String visit(BinCond cond) {
-        return "(" + print(cond.getLhs()) + ") "
-                + opNames.getOrDefault(cond.getOp().toString(), "unknown")
-                + " (" + print(cond.getRhs()) + ")";
-    }
-
-    @Override
-    public String visit(UnCond cond) {
-        return cond.getOp()
-                + "(" + print(cond.getSub()) + ")";
-    }
-
-    @Override
-    public String visit(RawCond cond) {
-        return "(" + print(cond.getSub()) + ")";
-    }
-
-    @Override
-    public String visit(RelCond cond) {
-        return "(" + print(cond.getLhs()) + ") "
-                + opNames.getOrDefault(cond.getOp().toString(), "unknown")
-                + " (" + print(cond.getRhs()) + ")";
-    }
-
-    @Override
     public String visit(ArrDecl decl) {
         return decl.type().type()
                 + " " + decl.name()
-                + decl.type().widths();
+                + "[" + printWidths(decl.type().widths()) + "]";
     }
 
     @Override
@@ -132,14 +129,14 @@ public final class Print implements ASTVisitor<String> {
     public String visit(FunDecl decl) {
         return decl.type().retType()
                 + " " + decl.name()
-                + "(" + decl.getParams() + ")"
+                + "(" + printDecls(decl.getParams()) + ")"
                 + print(decl.getBody());
     }
 
     @Override
     public String visit(ArrAccExp exp) {
-        return exp.arr().name()
-                + printExps(exp.indices());
+        return exp.arr().name() + "["
+                + printArrAccIdx(exp.indices()) + "]";
     }
 
     @Override
@@ -160,11 +157,7 @@ public final class Print implements ASTVisitor<String> {
 
     @Override
     public String visit(FunExp exp) {
-        return exp.fun().name() + "("
-                + exp.args().stream()
-                .map(this::print)
-                .reduce("", (x, y) -> x + ", " + y)
-                + ")";
+        return exp.fun().name() + "(" + printExps(exp.args()) + ")";
     }
 
     @Override
