@@ -11,7 +11,7 @@ public final class ProgramParser extends DefaultVisitor<Program> {
     @Override
     public Program visitCompUnit(SysYParser.CompUnitContext ctx) {
         List<FunDecl> decls = ctx.decl().stream()
-                .map(DeclParser::parse)
+                .map(GlobalDeclParser::parse)
                 .flatMap(List::stream)
                 .filter(FunDecl.class::isInstance)
                 .map(FunDecl.class::cast)

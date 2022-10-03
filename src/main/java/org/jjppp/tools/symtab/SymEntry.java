@@ -2,42 +2,29 @@ package org.jjppp.tools.symtab;
 
 import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.FunDecl;
-import org.jjppp.runtime.Val;
-import org.jjppp.type.Type;
 
-import java.util.Optional;
-
-public final class SymEntry {
+public final class SymEntry implements Entry {
     private final Decl decl;
-    private final Val defVal;
     private final boolean isGlobal;
     private int addr;
     private int size;
 
-    private SymEntry(int addr, Decl decl, Val defVal) {
+    private SymEntry(int addr, Decl decl) {
         this.addr = addr;
         this.decl = decl;
         this.isGlobal = SymTab.isGlobal();
-        this.defVal = defVal;
     }
 
-    public static SymEntry from(FunDecl funDecl) {
-        return new SymEntry(-1, funDecl, null);
+    static SymEntry from(FunDecl funDecl) {
+        return new SymEntry(-1, funDecl);
     }
 
-    public static SymEntry from(Decl decl, Val defVal) {
-        if (defVal != null && !SymTab.isGlobal()) {
-            throw new AssertionError("local symbol should not have defVal");
-        }
-        return new SymEntry(-1, decl, defVal);
+    static SymEntry from(Decl decl) {
+        return new SymEntry(-1, decl);
     }
 
-    public String getName() {
-        return decl.name();
-    }
-
-    public Optional<Val> defVal() {
-        return Optional.ofNullable(defVal);
+    public int getSize() {
+        return size;
     }
 
     public int getAddr() {
@@ -48,22 +35,12 @@ public final class SymEntry {
         this.addr = addr;
     }
 
-    public int size() {
-        return size;
-    }
-
-    public Type getType() {
-        return decl.type();
-    }
-
+    @Override
     public Decl getDecl() {
         return decl;
     }
 
-    public boolean isConst() {
-        return decl.isConst();
-    }
-
+    @Override
     public boolean isGlobal() {
         return isGlobal;
     }

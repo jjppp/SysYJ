@@ -24,12 +24,23 @@ public interface OpExp extends Exp {
                 throw new RuntimeException(e);
             }
         }
+
+        @Override
+        public int prior() {
+            return switch (this) {
+                case MUL, MOD, DIV -> 12;
+                case ADD, SUB -> 11;
+                case LE, LT, GE, GT -> 10;
+                case NE, EQ -> 9;
+                case AND -> 8;
+                case OR -> 7;
+            };
+        }
     }
 
     enum UnOp implements UnaryOperator<Val>, Op {
         NEG, POS,
-        NOT,
-        IZ, NZ;
+        NOT;
 
         @Override
         public Val apply(Val val) {
@@ -39,8 +50,16 @@ public interface OpExp extends Exp {
                 default -> throw new AssertionError("TODO");
             };
         }
+
+        @Override
+        public int prior() {
+            return switch (this) {
+                case NEG, POS, NOT -> 13;
+            };
+        }
     }
 
     interface Op {
+        int prior();
     }
 }

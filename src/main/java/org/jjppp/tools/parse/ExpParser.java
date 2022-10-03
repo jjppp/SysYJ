@@ -4,7 +4,7 @@ import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.exp.*;
 import org.jjppp.parser.SysYParser;
-import org.jjppp.tools.symtab.SymEntry;
+import org.jjppp.tools.symtab.ConstSymEntry;
 import org.jjppp.tools.symtab.SymTab;
 
 import java.util.List;
@@ -30,8 +30,7 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     public Exp visitLValExp(SysYParser.LValExpContext ctx) {
         LVal lVal = LValParser.parse(ctx.lVal());
         String name = lVal.getDecl().name();
-        SymEntry entry = SymTab.get(name);
-        if (entry.isConst()) {
+        if (SymTab.get(name) instanceof ConstSymEntry) {
             return ValExp.of(lVal.constEval());
         }
         return lVal;
@@ -110,6 +109,6 @@ public final class ExpParser extends DefaultVisitor<Exp> {
         List<Exp> exps = ctx.initVal().stream()
                 .map(ExpParser::parse)
                 .toList();
-        return ArrValExp.of(exps);
+        return ArrValExp.of(exps, exps.stream().noneMatch(ArrValExp.class::isInstance));
     }
 }

@@ -31,9 +31,9 @@ public class CondParser extends DefaultVisitor<Exp> {
     @Override
     public Exp visitRawCond(SysYParser.RawCondContext ctx) {
         if (ctx.op == null) {
-            return UnExp.of(OpExp.UnOp.NZ, ExpParser.parse(ctx.exp()));
+            return BinExp.of(OpExp.BiOp.NE, ExpParser.parse(ctx.exp()), 0);
         } else {
-            return UnExp.of(OpExp.UnOp.IZ, ExpParser.parse(ctx.exp()));
+            return BinExp.of(OpExp.BiOp.EQ, ExpParser.parse(ctx.exp()), 0);
         }
     }
 

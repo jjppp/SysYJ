@@ -1,32 +1,36 @@
 package org.jjppp.tools.parse;
 
-import org.jjppp.ast.Item;
 import org.jjppp.ast.decl.ArrDecl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.Exp;
 import org.jjppp.ast.stmt.Assign;
+import org.jjppp.ast.stmt.Block;
 import org.jjppp.parser.SysYParser;
+import org.jjppp.runtime.ArrVal;
+import org.jjppp.runtime.BaseVal;
 import org.jjppp.runtime.Val;
 import org.jjppp.tools.symtab.SymTab;
 import org.jjppp.type.ArrType;
 import org.jjppp.type.BaseType;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public final class DefParser extends DefaultVisitor<List<Item>> {
+public final class LocalDefParser extends DefaultVisitor<Block> {
     private final BaseType type;
 
-    private DefParser(BaseType type) {
+    private LocalDefParser(BaseType type) {
         this.type = type;
     }
 
-    public static List<Item> parse(SysYParser.DefContext ctx, BaseType type) {
-        return ctx.accept(new DefParser(type));
+    public static Block parse(SysYParser.DefContext ctx, BaseType type) {
+        return ctx.accept(new LocalDefParser(type));
     }
 
     @Override
-    public List<Item> visitDef(SysYParser.DefContext ctx) {
+    public Block visitDef(SysYParser.DefContext ctx) {
         Objects.requireNonNull(ctx.exp());
         String name = ctx.ID().getText();
 
@@ -36,27 +40,21 @@ public final class DefParser extends DefaultVisitor<List<Item>> {
         if (ctx.exp().isEmpty()) { // var
             VarDecl varDecl = VarDecl.of(name, type);
             if (varDecl.isConst()) {
-                Val defVal = Optional.ofNullable(defValExp)
+                BaseVal defVal = Optional.ofNullable(defValExp)
                         .map(Exp::constEval)
+                        .map(BaseVal.class::cast)
                         .orElse(null);
-                SymTab.add(varDecl, defVal);
-                return Collections.emptyList();
+                SymTab.addConstVar(varDecl, defVal);
+                return Block.empty();
             } else {
-                if (SymTab.isGlobal()) { // global
-                    if (defValExp == null) {
-                        SymTab.add(varDecl, null);
-                        return new ArrayList<>(List.of(varDecl));
-                    }
-                    throw new AssertionError("TODO");
-                } else { // local
-                    List<Item> result = new ArrayList<>(List.of(varDecl));
-                    SymTab.add(varDecl, null);
-                    if (defValExp != null) {
-                        // type id = exp; => type id; id = exp;
-                        result.add(Assign.of(varDecl, defValExp));
-                    }
-                    return result;
+                Block block = Block.empty();
+                block.add(varDecl);
+                SymTab.addVar(varDecl, null);
+                if (defValExp != null) {
+                    // type id = exp; => type id; id = exp;
+                    block.add(Assign.of(varDecl, defValExp));
                 }
+                return block;
             }
         } else { // arr
             List<Integer> widths = ctx.exp().stream()
@@ -66,15 +64,16 @@ public final class DefParser extends DefaultVisitor<List<Item>> {
                     .collect(Collectors.toList());
             ArrDecl arrDecl = ArrDecl.of(name, ArrType.of(type, widths));
             if (arrDecl.isConst()) {
-                Val defVal = Optional.ofNullable(defValExp)
+                ArrVal defVal = Optional.ofNullable(defValExp)
                         .map(Exp::constEval)
+                        .map(ArrVal.class::cast)
                         .orElse(null);
-                SymTab.add(arrDecl, defVal);
-                return Collections.emptyList();
+                SymTab.addConstArr(arrDecl, defVal);
+                return Block.empty();
             } else {
                 if (defValExp == null) {
-                    SymTab.add(arrDecl, null);
-                    return Collections.emptyList();
+                    SymTab.addArr(arrDecl, null);
+                    return Block.empty();
                 }
                 throw new AssertionError("TODO");
             }

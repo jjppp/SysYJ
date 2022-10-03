@@ -7,9 +7,9 @@ import org.jjppp.runtime.Val;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public record ArrValExp(List<Exp> exps) implements Exp {
-    public static ArrValExp of(List<Exp> exps) {
-        return new ArrValExp(exps);
+public record ArrValExp(List<Exp> exps, boolean isLinear) implements Exp {
+    public static ArrValExp of(List<Exp> exps, boolean isLinear) {
+        return new ArrValExp(exps, isLinear);
     }
 
     @Override

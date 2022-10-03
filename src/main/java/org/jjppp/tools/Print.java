@@ -11,10 +11,15 @@ import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.*;
 import org.jjppp.ast.stmt.*;
 import org.jjppp.runtime.Val;
+import org.jjppp.tools.symtab.SymTab;
+import org.jjppp.type.FunType;
+import org.jjppp.type.VoidType;
 
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public final class Print implements ASTVisitor<String> {
     private static final int TAB_SIZE = 4;
@@ -39,10 +44,13 @@ public final class Print implements ASTVisitor<String> {
     }
 
     public String prettyPrint() {
+        Block body = SymTab.getInitBlock();
+        FunType funType = FunType.from(VoidType.getInstance(), Collections.emptyList());
+        FunDecl initFun = FunDecl.of("_init", funType, Collections.emptyList(), body);
+
         return program.items().stream()
                 .map(this::print)
-                .reduce((x, y) -> x + "\n\n" + y)
-                .orElseThrow();
+                .reduce(print(initFun), (x, y) -> x + "\n\n" + y);
     }
 
     private String printItems(List<Item> items) {
@@ -150,9 +158,27 @@ public final class Print implements ASTVisitor<String> {
 
     @Override
     public String visit(BinExp exp) {
-        return "(" + print(exp.getLhs())
-                + opNames.getOrDefault(exp.getOp().toString(), "unknown")
-                + print(exp.getRhs()) + ")";
+        OpExp.Op op = exp.getOp();
+        Exp lhs = exp.getLhs();
+        Exp rhs = exp.getRhs();
+        String lhsString = print(lhs);
+        String rhsString = print(rhs);
+
+        if (lhs instanceof OpExp opExp) {
+            int p = opExp.getOp().prior();
+            if (p < op.prior()) {
+                lhsString = "(" + lhsString + ")";
+            }
+        }
+        if (rhs instanceof OpExp opExp) {
+            int p = opExp.getOp().prior();
+            if (p < op.prior()
+                    || op.equals(OpExp.BiOp.SUB) && p == op.prior()) {
+                rhsString = "(" + rhsString + ")";
+            }
+        }
+        return lhsString + " " + opNames.getOrDefault(op.toString(), "unknown")
+                + " " + rhsString;
     }
 
     @Override
@@ -184,7 +210,10 @@ public final class Print implements ASTVisitor<String> {
 
     @Override
     public String visit(Block stmt) {
-        return bracketOf(stmt.items());
+        List<Item> items = Stream.concat(
+                stmt.decls().stream(),
+                stmt.stmts().stream()).toList();
+        return bracketOf(items);
     }
 
     @Override

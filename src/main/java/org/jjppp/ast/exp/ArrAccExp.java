@@ -7,11 +7,12 @@ import org.jjppp.runtime.BaseVal;
 import org.jjppp.runtime.Val;
 import org.jjppp.tools.symtab.SymTab;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record ArrAccExp(ArrDecl arr, List<Exp> indices) implements LVal {
     public static ArrAccExp of(ArrDecl arr, List<Exp> indices) {
-        return new ArrAccExp(arr, indices);
+        return new ArrAccExp(arr, new ArrayList<>(indices));
     }
 
     @Override

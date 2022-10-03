@@ -1,7 +1,9 @@
 int a;
 
 int fun(int b, int c[]) {
-    return a+b*c[114][514];
+    int d = 5;
+    int wjp = 4 * 2 - (5 + 3);
+    return a+b*c[114][514]-d;
 }
 
 int main() {

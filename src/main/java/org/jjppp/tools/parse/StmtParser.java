@@ -1,13 +1,9 @@
 package org.jjppp.tools.parse;
 
-import org.jjppp.ast.Item;
 import org.jjppp.ast.stmt.*;
 import org.jjppp.parser.SysYParser;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public final class StmtParser extends DefaultVisitor<Stmt> {
     private final static StmtParser INSTANCE = new StmtParser();
@@ -17,6 +13,28 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
 
     public static Stmt parse(SysYParser.StmtContext ctx) {
         return ctx.accept(INSTANCE);
+    }
+
+    public static Block parseBlock(SysYParser.BlockContext ctx) {
+        // must be local
+        Block block = Block.empty();
+        for (SysYParser.BlockItemContext blockItemCtx : ctx.blockItem()) {
+            if (blockItemCtx instanceof SysYParser.DeclItemContext declItemCtx) {
+                SysYParser.DeclContext declCtx = declItemCtx.decl();
+                if (declCtx instanceof SysYParser.ConstDeclContext constDeclCtx) {
+                    block.merge(LocalDeclParser.parse(constDeclCtx));
+                } else if (declCtx instanceof SysYParser.VarDeclContext varDeclCtx) {
+                    block.merge(LocalDeclParser.parse(varDeclCtx));
+                } else {
+                    throw new AssertionError("Should not reach here");
+                }
+            } else if (blockItemCtx instanceof SysYParser.StmtItemContext stmtItemCtx) {
+                block.add(StmtParser.parse(stmtItemCtx.stmt()));
+            } else {
+                throw new AssertionError("Should not reach here");
+            }
+        }
+        return block;
     }
 
     @Override
@@ -76,9 +94,6 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
 
     @Override
     public Block visitBlockStmt(SysYParser.BlockStmtContext ctx) {
-        List<Item> items = ctx.block().blockItem().stream()
-                .map(ItemParser::parse)
-                .flatMap(Collection::stream).collect(Collectors.toList());
-        return Block.of(items);
+        return parseBlock(ctx.block());
     }
 }

@@ -25,8 +25,20 @@ public final class BinExp extends Binary<Exp> implements OpExp {
         return new BinExp(VarExp.of(lhs), VarExp.of(rhs), op);
     }
 
+    public static BinExp of(BiOp op, VarDecl lhs, Exp rhs) {
+        return new BinExp(VarExp.of(lhs), rhs, op);
+    }
+
+    public static BinExp of(BiOp op, Exp lhs, VarDecl rhs) {
+        return new BinExp(lhs, VarExp.of(rhs), op);
+    }
+
     public static BinExp of(BiOp op, VarDecl lhs, int rhs) {
         return new BinExp(VarExp.of(lhs), ValExp.of(Int.from(rhs)), op);
+    }
+
+    public static BinExp of(BiOp op, Exp lhs, int rhs) {
+        return new BinExp(lhs, ValExp.of(Int.from(rhs)), op);
     }
 
     @Override

@@ -4,16 +4,25 @@ import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.Item;
 import org.jjppp.ast.decl.Decl;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public record Block(List<Item> items) implements Stmt {
-    public static Block of(List<Item> items) {
-        List<Item> sorted = items.stream()
-                .filter(Decl.class::isInstance)
-                .collect(Collectors.toList());
-        sorted.addAll(items.stream().filter(Stmt.class::isInstance).toList());
-        return new Block(sorted);
+public record Block(List<Decl> decls, List<Stmt> stmts) implements Stmt {
+    public static Block empty() {
+        return new Block(new ArrayList<>(), new ArrayList<>());
+    }
+
+    public void add(Item item) {
+        if (item instanceof Decl decl) {
+            decls.add(decl);
+        } else if (item instanceof Stmt stmt) {
+            stmts.add(stmt);
+        }
+    }
+
+    public void merge(Block after) {
+        decls.addAll(after.decls);
+        stmts.addAll(after.stmts);
     }
 
     @Override
