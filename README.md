@@ -6,12 +6,16 @@ Coming soon.
 
 # TODO
 
-- [ ] ANTLR parser
+- [X] ANTLR parser
 - [ ] Type check
-- [ ] Convert to my AST
-- [ ] Resolve symbols
-- [ ] Linear IR design (optional)
-- [ ] Optimization (optional)
+- [X] Convert to my AST
+- [X] Resolve symbols
+- [X] Linear IR design (optional)
+- [ ] CFG generation
+- [ ] SSA transformation
+- [ ] Local optimization
+- [ ] Global optimization
+- [ ] Inter procedural optimization (optional)
 - [ ] Code generation (x86-64)
 
 爭取不咕咕咕
