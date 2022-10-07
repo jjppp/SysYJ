@@ -1,5 +1,8 @@
 package org.jjppp.runtime;
 
+import org.jjppp.type.BaseType;
+import org.jjppp.type.FloatType;
+
 public record Float(java.lang.Float value) implements BaseVal {
     public static Float from(String rep) {
         return new Float(java.lang.Float.parseFloat(rep));
@@ -42,5 +45,10 @@ public record Float(java.lang.Float value) implements BaseVal {
     @Override
     public Val neg() {
         return Float.from(-value);
+    }
+
+    @Override
+    public BaseType type() {
+        return FloatType.ofConst();
     }
 }

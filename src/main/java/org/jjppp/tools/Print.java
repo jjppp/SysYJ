@@ -15,11 +15,7 @@ import org.jjppp.tools.symtab.SymTab;
 import org.jjppp.type.FunType;
 import org.jjppp.type.VoidType;
 
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
+import java.util.*;
 
 public final class Print implements ASTVisitor<String> {
     private static final int TAB_SIZE = 4;
@@ -48,7 +44,7 @@ public final class Print implements ASTVisitor<String> {
         FunType funType = FunType.from(VoidType.getInstance(), Collections.emptyList());
         FunDecl initFun = FunDecl.of("_init", funType, Collections.emptyList(), body);
 
-        return program.items().stream()
+        return program.funList().stream()
                 .map(this::print)
                 .reduce(print(initFun), (x, y) -> x + "\n\n" + y);
     }
@@ -71,13 +67,6 @@ public final class Print implements ASTVisitor<String> {
         return exps.stream()
                 .map(this::print)
                 .reduce((x, y) -> x + ", " + y)
-                .orElse("");
-    }
-
-    private String printWidths(List<Integer> widths) {
-        return widths.stream()
-                .map(Object::toString)
-                .reduce((x, y) -> x + "][" + y)
                 .orElse("");
     }
 
@@ -122,15 +111,17 @@ public final class Print implements ASTVisitor<String> {
 
     @Override
     public String visit(ArrDecl decl) {
-        return decl.type().type()
-                + " " + decl.name()
-                + "[" + printWidths(decl.type().widths()) + "]";
+        return decl.toString();
     }
 
     @Override
     public String visit(VarDecl decl) {
-        return decl.type()
-                + " " + decl.name();
+        if (decl.defValExp().isEmpty()) {
+            return decl.type()
+                    + " " + decl.name();
+        } else {
+            return decl.type() + " " + decl.name() + " = " + print(decl.defValExp().get());
+        }
     }
 
     @Override
@@ -199,6 +190,9 @@ public final class Print implements ASTVisitor<String> {
 
     @Override
     public String visit(VarExp exp) {
+        if (exp.var().isGlobal()) {
+            return "@" + exp.var().name();
+        }
         return exp.var().name();
     }
 
@@ -210,9 +204,7 @@ public final class Print implements ASTVisitor<String> {
 
     @Override
     public String visit(Block stmt) {
-        List<Item> items = Stream.concat(
-                stmt.decls().stream(),
-                stmt.stmts().stream()).toList();
+        List<Item> items = new ArrayList<>(stmt.items());
         return bracketOf(items);
     }
 

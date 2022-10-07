@@ -1,5 +1,8 @@
 package org.jjppp.runtime;
 
+import org.jjppp.type.IntType;
+import org.jjppp.type.Type;
+
 public record Int(Integer value) implements BaseVal {
     public static Int from(int value) {
         return new Int(value);
@@ -64,5 +67,10 @@ public record Int(Integer value) implements BaseVal {
     @Override
     public Val neg() {
         return Int.from(-value);
+    }
+
+    @Override
+    public Type type() {
+        return IntType.ofConst();
     }
 }

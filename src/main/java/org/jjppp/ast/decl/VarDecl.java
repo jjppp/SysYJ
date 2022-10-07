@@ -1,11 +1,19 @@
 package org.jjppp.ast.decl;
 
 import org.jjppp.ast.ASTVisitor;
+import org.jjppp.ast.exp.Exp;
+import org.jjppp.tools.symtab.SymTab;
 import org.jjppp.type.Type;
 
-public record VarDecl(String name, Type type) implements Decl {
-    public static VarDecl of(String name, Type type) {
-        return new VarDecl(name, type);
+import java.util.Optional;
+
+public record VarDecl(String name, Type type, Optional<Exp> defValExp, boolean isGlobal) implements Decl {
+    public static VarDecl of(String name, Type type, Exp defValExp) {
+        return new VarDecl(name, type, Optional.ofNullable(defValExp), SymTab.isGlobal());
+    }
+
+    public static VarDecl of(String name, Type type, Exp defValExp, boolean isGlobal) {
+        return new VarDecl(name, type, Optional.ofNullable(defValExp), isGlobal);
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.jjppp.ast.exp;
 import org.jjppp.ast.ASTVisitor;
 import org.jjppp.runtime.ArrVal;
 import org.jjppp.runtime.Val;
+import org.jjppp.type.Type;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,5 +21,10 @@ public record ArrValExp(List<Exp> exps, boolean isLinear) implements Exp {
     @Override
     public Val constEval() {
         return ArrVal.of(exps.stream().map(Exp::constEval).collect(Collectors.toList()));
+    }
+
+    @Override
+    public Type type() {
+        throw new AssertionError("TODO");
     }
 }

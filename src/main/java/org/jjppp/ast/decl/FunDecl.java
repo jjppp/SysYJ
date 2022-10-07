@@ -63,4 +63,9 @@ public final class FunDecl implements Decl {
     public boolean isConst() {
         return type.isConst();
     }
+
+    @Override
+    public boolean isGlobal() {
+        return true;
+    }
 }

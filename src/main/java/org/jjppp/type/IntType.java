@@ -1,5 +1,8 @@
 package org.jjppp.type;
 
+import org.jjppp.runtime.BaseVal;
+import org.jjppp.runtime.Int;
+
 public final class IntType implements BaseType {
     private final static IntType CONST = new IntType(true);
     private final static IntType NON_CONST = new IntType(false);
@@ -38,5 +41,10 @@ public final class IntType implements BaseType {
     @Override
     public boolean isConst() {
         return isConst;
+    }
+
+    @Override
+    public BaseVal defVal() {
+        return Int.from(0);
     }
 }

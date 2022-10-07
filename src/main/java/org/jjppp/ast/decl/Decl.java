@@ -13,4 +13,6 @@ public interface Decl extends Item {
     }
 
     boolean isConst();
+
+    boolean isGlobal();
 }

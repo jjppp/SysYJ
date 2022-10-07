@@ -40,7 +40,8 @@ public interface OpExp extends Exp {
 
     enum UnOp implements UnaryOperator<Val>, Op {
         NEG, POS,
-        NOT;
+        NOT,
+        NONE;
 
         @Override
         public Val apply(Val val) {
@@ -53,9 +54,7 @@ public interface OpExp extends Exp {
 
         @Override
         public int prior() {
-            return switch (this) {
-                case NEG, POS, NOT -> 13;
-            };
+            return 13;
         }
     }
 

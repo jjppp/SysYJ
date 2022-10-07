@@ -38,7 +38,7 @@ public final class ParamParser extends DefaultVisitor<List<Decl>> {
     public List<Decl> visitVarFParam(SysYParser.VarFParamContext ctx) {
         String name = ctx.ID().getText();
         BaseType bType = TypeParser.parse(ctx.bType(), false);
-        return List.of(VarDecl.of(name, bType));
+        return List.of(VarDecl.of(name, bType, null, false));
     }
 
     @Override
@@ -48,7 +48,8 @@ public final class ParamParser extends DefaultVisitor<List<Decl>> {
         List<Integer> widths = ctx.exp().stream()
                 .map(ExpParser::parse)
                 .map(Exp::constEval)
-                .map(Val::toInt).toList();
-        return List.of(ArrDecl.of(name, ArrType.of(bType, widths)));
+                .map(Val::toInt).collect(Collectors.toList());
+        widths.add(0, Integer.MAX_VALUE);
+        return List.of(ArrDecl.of(name, ArrType.of(bType, widths), false));
     }
 }

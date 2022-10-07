@@ -1,7 +1,9 @@
 package org.jjppp.tools.parse;
 
+import org.jjppp.ast.exp.ValExp;
 import org.jjppp.ast.stmt.*;
 import org.jjppp.parser.SysYParser;
+import org.jjppp.runtime.Val;
 
 import java.util.Optional;
 
@@ -22,9 +24,9 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
             if (blockItemCtx instanceof SysYParser.DeclItemContext declItemCtx) {
                 SysYParser.DeclContext declCtx = declItemCtx.decl();
                 if (declCtx instanceof SysYParser.ConstDeclContext constDeclCtx) {
-                    block.merge(LocalDeclParser.parse(constDeclCtx));
+                    block.items().addAll(LocalDeclParser.parse(constDeclCtx));
                 } else if (declCtx instanceof SysYParser.VarDeclContext varDeclCtx) {
-                    block.merge(LocalDeclParser.parse(varDeclCtx));
+                    block.items().addAll(LocalDeclParser.parse(varDeclCtx));
                 } else {
                     throw new AssertionError("Should not reach here");
                 }
@@ -42,7 +44,7 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
         return Return.of(
                 Optional.ofNullable(ctx.exp())
                         .map(ExpParser::parse)
-                        .orElse(null));
+                        .orElse(ValExp.of(Val.Void.getInstance())));
     }
 
     @Override

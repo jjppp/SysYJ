@@ -1,5 +1,7 @@
 package org.jjppp.type;
 
+import org.jjppp.runtime.BaseVal;
+
 public final class VoidType implements BaseType {
     private final static VoidType INSTANCE = new VoidType();
 
@@ -23,5 +25,10 @@ public final class VoidType implements BaseType {
     @Override
     public boolean isConst() {
         return true;
+    }
+
+    @Override
+    public BaseVal defVal() {
+        throw new UnsupportedOperationException("voidType defVal()");
     }
 }

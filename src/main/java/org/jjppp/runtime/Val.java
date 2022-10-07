@@ -26,4 +26,25 @@ public interface Val extends Comparable<Val> {
     default Val neg() {
         throw new UnsupportedOperationException("");
     }
+
+    final class Void implements Val {
+        private final static Void INSTANCE = new Void();
+
+        private Void() {
+        }
+
+        public static Void getInstance() {
+            return INSTANCE;
+        }
+
+        @Override
+        public int toInt() {
+            throw new UnsupportedOperationException("void toInt()");
+        }
+
+        @Override
+        public int compareTo(Val val) {
+            throw new UnsupportedOperationException("void compare()");
+        }
+    }
 }

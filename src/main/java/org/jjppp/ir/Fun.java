@@ -1,0 +1,30 @@
+package org.jjppp.ir;
+
+import org.jjppp.ir.control.Label;
+import org.jjppp.type.BaseType;
+import org.jjppp.type.Type;
+
+import java.util.List;
+
+public record Fun(String name, BaseType retType, List<Type> argTypes, List<IR> body) {
+    public static Fun of(String name, BaseType retType, List<Type> argTypes, List<IR> body) {
+        return new Fun(name, retType, argTypes, body);
+    }
+
+    @Override
+    public String toString() {
+        return "fun @" + name
+                + "(" + argTypes() + ")"
+                + ": " + retType() + " {"
+                + body.stream()
+                .map(x -> {
+                    if (x instanceof Label) {
+                        return x.toString();
+                    } else {
+                        return "  " + x;
+                    }
+                })
+                .reduce("", (x, y) -> x + "\n" + y)
+                + "\n}";
+    }
+}

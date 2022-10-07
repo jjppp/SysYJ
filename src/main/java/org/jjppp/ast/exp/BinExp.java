@@ -5,12 +5,16 @@ import org.jjppp.ast.Binary;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.runtime.Int;
 import org.jjppp.runtime.Val;
+import org.jjppp.type.IntType;
+import org.jjppp.type.Type;
 
 /**
  * Binary Exp
  */
 public final class BinExp extends Binary<Exp> implements OpExp {
     private final BiOp op;
+
+    private Type type = null;
 
     private BinExp(Exp lhs, Exp rhs, BiOp op) {
         super(lhs, rhs);
@@ -52,7 +56,20 @@ public final class BinExp extends Binary<Exp> implements OpExp {
     }
 
     @Override
-    public Op getOp() {
+    public BiOp getOp() {
         return op;
+    }
+
+    @Override
+    public Type type() {
+        if (type == null) {
+            Type lhsType = getLhs().type();
+            Type rhsType = getRhs().type();
+            type = switch (getOp()) {
+                case ADD, SUB, MUL, DIV, MOD -> lhsType;
+                case EQ, GE, NE, LE, GT, LT, AND, OR -> IntType.ofNonConst();
+            };
+        }
+        return type;
     }
 }

@@ -23,18 +23,11 @@ public final class GlobalDeclParser extends DefaultVisitor<List<Decl>> {
         return ctx.accept(INSTANCE);
     }
 
-    public static List<Decl> parse(SysYParser.FuncFParamsContext ctx) {
-        return ctx.accept(INSTANCE);
-    }
-
-    public static List<Decl> parse(SysYParser.FuncFParamContext ctx) {
-        return ctx.accept(INSTANCE);
-    }
-
     @Override
     public List<Decl> visitConstDecl(SysYParser.ConstDeclContext ctx) {
+        BaseType type = TypeParser.parse(ctx.bType(), true);
         return ctx.def().stream()
-                .map(x -> GlobalDefParser.parse(x, TypeParser.parse(ctx.bType(), true)))
+                .map(x -> GlobalDefParser.parse(x, type))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }

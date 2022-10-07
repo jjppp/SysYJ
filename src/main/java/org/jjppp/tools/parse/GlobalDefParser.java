@@ -5,6 +5,7 @@ import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.ArrValExp;
 import org.jjppp.ast.exp.Exp;
+import org.jjppp.ast.exp.ValExp;
 import org.jjppp.parser.SysYParser;
 import org.jjppp.runtime.ArrVal;
 import org.jjppp.runtime.BaseVal;
@@ -35,20 +36,20 @@ public final class GlobalDefParser extends DefaultVisitor<List<Decl>> {
         Objects.requireNonNull(ctx.exp());
         String name = ctx.ID().getText();
 
-        Exp defValExp = Optional.ofNullable(ctx.initVal())
-                .map(ExpParser::parse)
-                .orElse(null);
+        Optional<Exp> defValExp =
+                Optional.ofNullable(ctx.initVal())
+                        .map(ExpParser::parse);
+        VarDecl varDecl = VarDecl.of(name, type, null);
         if (ctx.exp().isEmpty()) { // var
-            VarDecl varDecl = VarDecl.of(name, type);
-            if (varDecl.isConst()) {
-                BaseVal defVal = Optional.ofNullable(defValExp)
+            if (type.isConst()) {
+                BaseVal defVal = defValExp
                         .map(Exp::constEval)
                         .map(BaseVal.class::cast)
                         .orElse(null);
                 SymTab.addConstVar(varDecl, defVal);
                 return Collections.emptyList();
             } else {
-                SymTab.addVar(varDecl, defValExp);
+                SymTab.addVar(varDecl, defValExp.orElse(ValExp.of(type.defVal())));
                 return List.of(varDecl);
             }
         } else { // arr
@@ -57,17 +58,18 @@ public final class GlobalDefParser extends DefaultVisitor<List<Decl>> {
                     .map(Exp::constEval)
                     .map(Val::toInt)
                     .collect(Collectors.toList());
-            ArrDecl arrDecl = ArrDecl.of(name, ArrType.of(type, widths));
+            ArrDecl arrDecl = ArrDecl.of(name, ArrType.of(type, widths), true);
             if (arrDecl.isConst()) {
-                ArrVal defVal = Optional.ofNullable(defValExp)
+                ArrVal defVal = defValExp
                         .map(Exp::constEval)
                         .map(ArrVal.class::cast)
                         .orElse(null);
                 SymTab.addConstArr(arrDecl, defVal);
+                return Collections.emptyList();
             } else {
-                SymTab.addArr(arrDecl, (ArrValExp) defValExp);
+                SymTab.addArr(arrDecl, (ArrValExp) (defValExp.orElse(null)));
+                return List.of(arrDecl);
             }
-            return List.of(arrDecl);
         }
     }
 }

@@ -1,12 +1,14 @@
+int arr[512][1024];
+
 int a;
 
-int fun(int b, int c[]) {
+int fun(int b, int c[][1024]) {
     int d = 5;
     int wjp = 4 * 2 - (5 + 3);
     return a+b*c[114][514]-d;
 }
 
 int main() {
-    int c = fun(233);
+    int c = fun(233, arr);
     return a;
 }

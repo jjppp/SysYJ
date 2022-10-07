@@ -1,4 +1,6 @@
 package org.jjppp.runtime;
 
-public interface BaseVal extends Val {
+import org.jjppp.ir.Ope;
+
+public interface BaseVal extends Val, Ope {
 }

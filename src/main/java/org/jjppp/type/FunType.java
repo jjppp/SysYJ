@@ -1,6 +1,7 @@
 package org.jjppp.type;
 
 import org.jjppp.ast.decl.Decl;
+import org.jjppp.runtime.BaseVal;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,6 +16,11 @@ public record FunType(BaseType retType, List<Type> argTypes) implements Type {
     }
 
     @Override
+    public String toString() {
+        return argTypes + " -> " + retType;
+    }
+
+    @Override
     public int size() {
         throw new AssertionError("Fun size()");
     }
@@ -22,5 +28,10 @@ public record FunType(BaseType retType, List<Type> argTypes) implements Type {
     @Override
     public boolean isConst() {
         return false;
+    }
+
+    @Override
+    public BaseVal defVal() {
+        throw new UnsupportedOperationException("funType defVal()");
     }
 }

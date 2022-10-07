@@ -1,0 +1,18 @@
+
+int f[22][33][44];
+
+int a;
+
+int main() {
+    int p = a;
+    int a = 1;
+    int b = 5;
+    int c = (a * b + 114 / 514) * 2 - 3 / 1;
+    int d = f[2][3][4];
+    {
+        int a = 114514;
+        int g = a - b * a - c * d;
+    }
+    int h = a;
+    return c;
+}

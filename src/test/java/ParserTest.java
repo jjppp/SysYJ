@@ -3,6 +3,7 @@ import org.jjppp.ast.Program;
 import org.jjppp.runtime.Int;
 import org.jjppp.tools.Print;
 import org.jjppp.tools.parse.Parser;
+import org.jjppp.tools.transform.Transform3AC;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ public final class ParserTest {
         Program program = fromFile(filename);
         Print print = new Print(program);
         System.out.println(print.prettyPrint());
+        System.out.println(Transform3AC.transform(program));
     }
 
     @Test
@@ -68,5 +70,15 @@ public final class ParserTest {
     void testConst() {
         List<String> files = List.of("06_const_var_defn2.sy", "07_const_var_defn3.sy", "08_const_array_defn.sy");
         files.forEach(file -> print("official/functional/" + file));
+    }
+
+    @Test
+    void testSSA() {
+        print("simple/ssa.sy");
+    }
+
+    @Test
+    void testControl() {
+        print("simple/control.sy");
     }
 }

@@ -1,5 +1,8 @@
 package org.jjppp.type;
 
+import org.jjppp.runtime.BaseVal;
+import org.jjppp.runtime.Float;
+
 public final class FloatType implements BaseType {
     private final static FloatType CONST = new FloatType(true);
     private final static FloatType NON_CONST = new FloatType(false);
@@ -38,5 +41,10 @@ public final class FloatType implements BaseType {
     @Override
     public boolean isConst() {
         return isConst;
+    }
+
+    @Override
+    public BaseVal defVal() {
+        return Float.from(0);
     }
 }
