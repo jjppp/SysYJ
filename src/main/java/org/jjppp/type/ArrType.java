@@ -9,9 +9,13 @@ public record ArrType(BaseType type, int dim, List<Integer> widths, boolean isCo
         return new ArrType(type, widths.size(), widths, type.isConst());
     }
 
+    public int length() {
+        return widths.stream().reduce(1, (x, y) -> x * y);
+    }
+
     @Override
     public int size() {
-        return widths.stream().reduce(1, (x, y) -> x * y);
+        return length() * type().size();
     }
 
     @Override

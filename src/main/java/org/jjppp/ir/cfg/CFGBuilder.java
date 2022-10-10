@@ -1,5 +1,6 @@
 package org.jjppp.ir.cfg;
 
+import org.jjppp.ir.Fun;
 import org.jjppp.ir.Instr;
 import org.jjppp.ir.control.Br;
 import org.jjppp.ir.control.Jmp;
@@ -10,10 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 public final class CFGBuilder {
-    public static CFG buildFrom(List<Instr> instrList) {
+    public static CFG buildFrom(Fun fun) {
+        List<Instr> instrList = fun.body();
         Map<Label, Block> labelBlockMap = new HashMap<>();
         Block block = Block.empty();
-        CFG cfg = new CFG();
+        CFG cfg = new CFG(fun);
         Block last = null;
 
         for (Instr instr : instrList) {

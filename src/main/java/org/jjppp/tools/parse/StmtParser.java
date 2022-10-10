@@ -17,7 +17,7 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
         return ctx.accept(INSTANCE);
     }
 
-    public static Scope parseBlock(SysYParser.ScopeContext ctx) {
+    public static Scope parseSCope(SysYParser.ScopeContext ctx) {
         // must be local
         Scope scope = Scope.empty();
         for (SysYParser.BlockItemContext blockItemCtx : ctx.blockItem()) {
@@ -96,6 +96,6 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
 
     @Override
     public Scope visitBlockStmt(SysYParser.BlockStmtContext ctx) {
-        return parseBlock(ctx.scope());
+        return parseSCope(ctx.scope());
     }
 }

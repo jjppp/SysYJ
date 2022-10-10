@@ -1,7 +1,6 @@
 package org.jjppp.runtime;
 
-import org.jjppp.type.IntType;
-import org.jjppp.type.Type;
+import org.jjppp.ir.type.BaseType;
 
 public record Int(Integer value) implements BaseVal {
     public static Int from(int value) {
@@ -70,7 +69,7 @@ public record Int(Integer value) implements BaseVal {
     }
 
     @Override
-    public Type type() {
-        return IntType.ofConst();
+    public BaseType type() {
+        return BaseType.Int.Type();
     }
 }

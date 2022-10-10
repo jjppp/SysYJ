@@ -1,9 +1,8 @@
 package org.jjppp.ir;
 
-import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.exp.OpExp;
-import org.jjppp.type.IntType;
-import org.jjppp.type.Type;
+import org.jjppp.ir.type.BaseType;
+import org.jjppp.ir.type.Type;
 
 import java.util.List;
 
@@ -14,8 +13,10 @@ public interface Exp {
         @Override
         public Type type() {
             return switch (op) {
-                case ADD, SUB, DIV, MUL, MOD -> lhs.type();
-                case EQ, NE, LE, GE, LT, GT, AND, OR -> IntType.ofConst();
+                case ADD, SUB, DIV, MUL, MOD,
+                        FADD, FSUB, FDIV, FMUL,
+                        PADD, PSUB, PMUL -> lhs.type();
+                case EQ, NE, LE, GE, LT, GT, AND, OR -> BaseType.Int.Type();
             };
         }
 
@@ -29,33 +30,35 @@ public interface Exp {
         @Override
         public Type type() {
             return switch (op) {
+                case TOI, NOT -> BaseType.Int.Type();
+                case TOF -> BaseType.Float.Type();
                 case NONE, NEG, POS -> sub.type();
-                case NOT -> IntType.ofConst();
             };
         }
 
         @Override
         public String toString() {
-            return switch (op) {
-                case NONE -> sub.toString();
-                default -> op + " " + sub;
-            };
+            if (op.equals(OpExp.UnOp.NONE)) {
+                return sub.toString();
+            } else {
+                return op + " " + sub;
+            }
         }
     }
 
-    record Call(FunDecl funDecl, List<Ope> args) implements Exp {
+    record Call(Fun fun, List<Ope> args) implements Exp {
         @Override
         public Type type() {
-            return funDecl.type().retType();
+            return fun.retType();
         }
 
         @Override
         public String toString() {
-            return "call @" + funDecl.name() + " " + args;
+            return "call @" + fun.name() + " " + args;
         }
     }
 
-    record Load(Var loc, Var off) implements Exp {
+    record Load(Var loc) implements Exp {
         @Override
         public Type type() {
             return loc.type();
@@ -63,7 +66,7 @@ public interface Exp {
 
         @Override
         public String toString() {
-            return loc + "[" + off + "]";
+            return "*" + loc;
         }
     }
 }

@@ -1,6 +1,6 @@
 package org.jjppp.ir;
 
-import org.jjppp.type.Type;
+import org.jjppp.ir.type.Type;
 
 public interface Ope {
     Type type();

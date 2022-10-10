@@ -7,18 +7,31 @@ import org.junit.jupiter.api.Test;
 
 public final class CFGTest {
     @Test
-    void testCFGtoFile() {
+    void testMaxflow() {
         Program program = ParserTest.fromFile("simple/maxflow.sy");
         IRCode code = Transform3AC.transform(program);
         ParserTest.print("simple/maxflow.sy");
 
-        int cnt = 0;
         for (Fun fun : code.funList()) {
-            String filePath = "/tmp/cfg/" + Math.abs(fun.hashCode()) + cnt + ".dot";
-            System.out.println(filePath);
-            CFGBuilder.buildFrom(fun.body())
-                    .toFile(filePath);
-            cnt += 1;
+            String folderPath = "/tmp/cfg/";
+            System.out.println(folderPath);
+            CFGBuilder.buildFrom(fun)
+                    .toFolder(folderPath);
+        }
+    }
+
+
+    @Test
+    void testAlloc() {
+        Program program = ParserTest.fromFile("simple/alloc.sy");
+        IRCode code = Transform3AC.transform(program);
+        ParserTest.print("simple/alloc.sy");
+
+        for (Fun fun : code.funList()) {
+            String folderPath = "/tmp/cfg/";
+            System.out.println(folderPath);
+            CFGBuilder.buildFrom(fun)
+                    .toFolder(folderPath);
         }
     }
 }

@@ -1,16 +1,23 @@
 package org.jjppp.ir.cfg;
 
+import org.jjppp.ir.Fun;
+
 import java.io.FileOutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class CFG {
+    private final Fun fun;
     private final Map<Block, Node> blockNodeMap = new HashMap<>();
     private final Set<Edge> edges = new HashSet<>();
 
+    public CFG(Fun fun) {
+        this.fun = fun;
+    }
+
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("digraph \"CFG\" {\n");
+        StringBuilder builder = new StringBuilder("digraph \"" + fun.name() + "\" {\n");
         builder.append("labeljust=l\n");
         HashMap<Node, Integer> map = new HashMap<>();
         int cnt = 0;
@@ -66,8 +73,8 @@ public final class CFG {
         toNode.addPred(fromNode);
     }
 
-    public void toFile(String filePath) {
-        try (var outputStream = new FileOutputStream(filePath)) {
+    public void toFolder(String folderPath) {
+        try (var outputStream = new FileOutputStream(folderPath + fun.name() + ".dot")) {
             outputStream.write(this.toString().getBytes());
         } catch (Exception e) {
             throw new RuntimeException(e);

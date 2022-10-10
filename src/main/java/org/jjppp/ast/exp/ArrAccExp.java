@@ -42,6 +42,11 @@ public record ArrAccExp(ArrDecl arr, List<Exp> indices) implements LVal {
 
     @Override
     public Type type() {
-        return arr.type().type();
+        // TODO: introduction and elimination
+        if (indices().size() < arr().type().dim()) {
+            return arr.type();
+        } else {
+            return arr.type().type();
+        }
     }
 }

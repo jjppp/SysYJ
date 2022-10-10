@@ -1,7 +1,6 @@
 package org.jjppp.runtime;
 
-import org.jjppp.type.BaseType;
-import org.jjppp.type.FloatType;
+import org.jjppp.ir.type.BaseType;
 
 public record Float(java.lang.Float value) implements BaseVal {
     public static Float from(String rep) {
@@ -49,6 +48,6 @@ public record Float(java.lang.Float value) implements BaseVal {
 
     @Override
     public BaseType type() {
-        return FloatType.ofConst();
+        return BaseType.Float.Type();
     }
 }

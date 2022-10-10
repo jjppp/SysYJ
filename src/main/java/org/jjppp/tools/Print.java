@@ -11,11 +11,11 @@ import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.*;
 import org.jjppp.ast.stmt.*;
 import org.jjppp.runtime.Val;
-import org.jjppp.tools.symtab.SymTab;
-import org.jjppp.type.FunType;
-import org.jjppp.type.VoidType;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public final class Print implements ASTVisitor<String> {
     private static final int TAB_SIZE = 4;
@@ -40,13 +40,11 @@ public final class Print implements ASTVisitor<String> {
     }
 
     public String prettyPrint() {
-        Scope body = SymTab.getInitBlock();
-        FunType funType = FunType.from(VoidType.getInstance(), Collections.emptyList());
-        FunDecl initFun = FunDecl.of("_init", funType, Collections.emptyList(), body);
 
         return program.funList().stream()
                 .map(this::print)
-                .reduce(print(initFun), (x, y) -> x + "\n\n" + y);
+                .reduce((x, y) -> x + "\n\n" + y)
+                .orElseThrow();
     }
 
     private String printItems(List<Item> items) {

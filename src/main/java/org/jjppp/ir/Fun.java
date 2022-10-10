@@ -1,8 +1,8 @@
 package org.jjppp.ir;
 
 import org.jjppp.ir.control.Label;
-import org.jjppp.type.BaseType;
-import org.jjppp.type.Type;
+import org.jjppp.ir.type.BaseType;
+import org.jjppp.ir.type.Type;
 
 import java.util.List;
 

@@ -68,7 +68,7 @@ public final class LocalDefParser extends DefaultVisitor<List<Decl>> {
             } else {
                 if (defValExp == null) {
                     SymTab.addArr(arrDecl, null);
-                    return Collections.emptyList();
+                    return List.of(arrDecl);
                 }
                 throw new AssertionError("TODO");
             }

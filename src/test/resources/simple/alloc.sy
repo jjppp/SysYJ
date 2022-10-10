@@ -1,0 +1,31 @@
+int global_var;
+
+int global_arr[1919][810];
+
+int foo(int param_arr[], int n) {
+    int i = 0;
+    while (i < n) {
+        param_arr[i] = 0;
+        i = i + 1;
+    }
+}
+
+int bar(int param_arr[][514], int n) {
+    return 0;
+}
+
+int main() {
+    int local_arr[114][514];
+
+    global_var = 114;
+    int c = global_var;
+
+    global_arr[1][2] = 4;
+    int d = global_arr[1][2];
+
+    foo(local_arr[66], 6);
+
+    foo(global_arr[66], 99);
+
+    bar(local_arr, global_var);
+}

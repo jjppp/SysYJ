@@ -15,20 +15,24 @@ import org.jjppp.ir.control.Br;
 import org.jjppp.ir.control.Jmp;
 import org.jjppp.ir.control.Label;
 import org.jjppp.ir.control.Ret;
+import org.jjppp.ir.mem.LAlloc;
+import org.jjppp.ir.mem.Store;
+import org.jjppp.ir.type.BaseType;
+import org.jjppp.ir.type.Loc;
+import org.jjppp.ir.type.Type;
 import org.jjppp.runtime.BaseVal;
 import org.jjppp.runtime.Int;
 import org.jjppp.type.ArrType;
-import org.jjppp.type.IntType;
-import org.jjppp.type.LocType;
-import org.jjppp.type.Type;
+import org.jjppp.type.FunType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.jjppp.ast.exp.OpExp.BiOp.PADD;
 
 public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     private final static Transform3AC INSTANCE = new Transform3AC();
+    private final static Map<String, Fun> globalFun = new HashMap<>();
     private static Var retVar;
     private static Label exit;
     private final Stack<Label> contStack = new Stack<>();
@@ -38,37 +42,45 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     }
 
     public static IRCode transform(Program program) {
-        List<Fun> funList = new ArrayList<>();
-        for (FunDecl fun : program.funList()) {
-            retVar = Var.allocTmp(fun.type().retType());
+        for (FunDecl funDecl : program.funList()) {
+            FunType funType = funDecl.type();
+
+            globalFun.put(funDecl.name(), Fun.of(
+                    funDecl.name(),
+                    BaseType.from(funType.retType()),
+                    funType.argTypes().stream()
+                            .map(Type::from)
+                            .collect(Collectors.toList()),
+                    new ArrayList<>()));
+        }
+
+        IRCode irCode = new IRCode(new ArrayList<>(), new ArrayList<>());
+
+        for (int i = 0; i < program.funList().size(); ++i) {
+            FunDecl funDecl = program.funList().get(i);
+            Fun fun = globalFun.get(funDecl.name());
+            if (!fun.name().equals(funDecl.name())) {
+                throw new AssertionError("fun name not match");
+            }
+
+            FunType funType = funDecl.type();
+            retVar = Var.allocTmp(BaseType.from(funType.retType()));
             exit = Label.alloc("exit");
-            Result body = transform(fun.getBody());
+            Result body = transform(funDecl.getBody());
             body.add(exit);
             body.add(new Ret(retVar));
-
-            Fun transformed = Fun.of(
-                    fun.name(),
-                    fun.type().retType(),
-                    fun.type().argTypes().stream()
-                            .map(x -> {
-                                if (x instanceof ArrType arrType) {
-                                    return new LocType(arrType.type());
-                                } else {
-                                    return x;
-                                }
-                            }).collect(Collectors.toList()),
-                    body.block);
-            funList.add(transformed);
+            fun.body().addAll(body.block);
+            irCode.add(fun);
         }
-        List<Alloc> allocList = new ArrayList<>();
         for (Decl decl : program.globalDecls()) {
             if (decl instanceof ArrDecl arrDecl) {
-                allocList.add(Alloc.from(arrDecl));
+                // TODO: check global def using alloc
+                irCode.add(Def.from(Var.from(arrDecl), arrDecl));
             } else if (decl instanceof VarDecl varDecl) {
-                allocList.add(Alloc.from(varDecl));
+                irCode.add(Def.from(Var.from(varDecl), varDecl));
             }
         }
-        return new IRCode(funList, allocList);
+        return irCode;
     }
 
     public static Result transform(ASTNode node) {
@@ -77,13 +89,20 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     @Override
     public Result visit(ArrDecl decl) {
+        // must be local
         Result result = Result.empty();
-        result.alloc(LocType.from(decl));
+        if (decl.isGlobal()) {
+            throw new AssertionError("TODO");
+        } else {
+            Var tmp = new Var(decl, Loc.from(decl), -1);
+            result.add(Def.of(tmp, LAlloc.from(decl)));
+        }
         return result;
     }
 
     @Override
     public Result visit(VarDecl decl) {
+        // must be local
         Result result;
         if (decl.defValExp().isPresent()) {
             result = transform(decl.defValExp().get());
@@ -97,12 +116,37 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     @Override
     public Result visit(ArrAccExp exp) {
+        // must be rhs
         ArrDecl arr = exp.arr();
         Result result;
         if (exp.indices().size() != 0) {
             result = transform(arr.type(), exp.indices());
             Var off = result.res;
-            result.alloc(exp.type(), Var.from(arr), off);
+            org.jjppp.type.Type expType = exp.type();
+            if (expType instanceof org.jjppp.type.BaseType) {
+                /* int arr[2][3][4][5]
+                 * int c = arr[1][1][1][1]
+                 */
+                Var pos = Var.allocTmp(Loc.from(arr));
+                Var tmp = Var.allocTmp(Type.from(expType));
+                result.add(Def.of(pos, new Exp.BiExp(PADD, Var.from(arr), off)));
+                result.add(Def.of(tmp, new Exp.Load(pos)));
+                result.res = tmp;
+            } else {
+                /* int arr[2][3][4][5]
+                 * int *c = arr[1][1]
+                 */
+                Var tmp;
+                for (int i = exp.indices().size(); i < arr.type().dim(); ++i) {
+                    tmp = Var.allocTmp(BaseType.Int.Type());
+                    int curWidth = arr.type().widths().get(i);
+                    result.add(Def.of(tmp, new Exp.BiExp(OpExp.BiOp.MUL, off, Int.from(curWidth))));
+                    off = tmp;
+                }
+                tmp = Var.allocTmp(Loc.from(arr));
+                result.add(Def.of(tmp, new Exp.BiExp(PADD, Var.from(arr), off)));
+                result.res = tmp;
+            }
         } else {
             result = Result.empty();
             result.res = Var.from(arr);
@@ -116,7 +160,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         var lhsResVar = result.res;
         result.merge(transform(exp.getRhs()));
         var rhsResVar = result.res;
-        result.alloc(exp.type(), new Exp.BiExp(exp.getOp(), lhsResVar, rhsResVar));
+        result.alloc(Type.from(exp.type()), new Exp.BiExp(exp.getOp(), lhsResVar, rhsResVar));
         return result;
     }
 
@@ -125,20 +169,21 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         List<Result> argList = exp.args().stream()
                 .map(Transform3AC::transform).toList();
         Result result = Result.empty();
+
         Exp.Call call = new Exp.Call(
-                exp.fun(),
+                globalFun.get(exp.fun().name()),
                 argList.stream()
                         .map(Result::getRes)
                         .collect(Collectors.toList()));
         argList.forEach(result::merge);
-        result.alloc(exp.type(), call);
+        result.alloc(Type.from(exp.type()), call);
         return result;
     }
 
     @Override
     public Result visit(UnExp exp) {
         Result result = transform(exp.getSub());
-        result.alloc(exp.type(), new Exp.UnExp(exp.getOp(), result.res));
+        result.alloc(Type.from(exp.type()), new Exp.UnExp(exp.getOp(), result.res));
         return result;
     }
 
@@ -146,7 +191,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     public Result visit(ValExp exp) {
         if (exp.val() instanceof BaseVal baseVal) {
             Result result = Result.empty();
-            result.alloc(exp.type(), new Exp.UnExp(OpExp.UnOp.NONE, baseVal));
+            result.alloc(Type.from(exp.type()), new Exp.UnExp(OpExp.UnOp.NONE, baseVal));
             return result;
         }
         throw new AssertionError("TODO");
@@ -154,8 +199,17 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     @Override
     public Result visit(VarExp exp) {
+        // must be rhs
         Result result = Result.empty();
-        result.alloc(exp.type(), new Exp.UnExp(OpExp.UnOp.NONE, Var.from(exp.var())));
+        VarDecl varDecl = exp.var();
+
+        if (varDecl.isGlobal()) {
+            Var tmp = Var.allocTmp(Type.from(exp.type()));
+            result.add(Def.of(tmp, new Exp.Load(Var.from(varDecl))));
+            result.res = tmp;
+        } else {
+            result.alloc(Type.from(exp.type()), new Exp.UnExp(OpExp.UnOp.NONE, Var.from(varDecl)));
+        }
         return result;
     }
 
@@ -168,9 +222,9 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             Result ith = transform(e);
             result.merge(ith);
             if (i != 0) {
-                var def1 = result.alloc(IntType.ofConst(),
+                var def1 = result.alloc(BaseType.Int.Type(),
                         new Exp.BiExp(OpExp.BiOp.MUL, last, Int.from(width)));
-                var def2 = result.alloc(IntType.ofConst(),
+                var def2 = result.alloc(BaseType.Int.Type(),
                         new Exp.BiExp(OpExp.BiOp.ADD, def1.var(), ith.res));
                 result.res = def2.var();
             }
@@ -183,14 +237,34 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Result result = transform(stmt.rhs());
         Var rhs = result.res;
         if (stmt.lhs() instanceof VarExp varExp) {
+            VarDecl varDecl = varExp.var();
             Var lhs = Var.from(varExp.var());
-            result.add(Def.of(lhs, rhs));
-            result.res = lhs;
+            if (!varDecl.isGlobal()) {
+                if (lhs.type() instanceof Loc) {
+                    throw new AssertionError("");
+                }
+                result.add(Def.of(lhs, rhs));
+                result.res = lhs;
+            } else {
+                if (lhs.type() instanceof Loc) {
+                    result.add(new Store(lhs, rhs));
+                } else {
+                    throw new AssertionError("");
+                }
+            }
             return result;
         } else if (stmt.lhs() instanceof ArrAccExp arrAccExp) {
+            /* eval rhs     => rhs
+             * eval offset  => off
+             * eval ptr     => arr + off
+             * store rhs    => *arr = rhs
+             */
             result.merge(transform(arrAccExp.arr().type(), arrAccExp.indices()));
             Var off = result.res;
-            result.add(new Store(Var.from(arrAccExp.arr()), off, rhs));
+            Var tmp = Var.allocTmp(Loc.from(arrAccExp.arr()));
+            result.add(Def.of(tmp, new Exp.BiExp(PADD, Var.from(arrAccExp.arr()), off)));
+            result.add(new Store(tmp, rhs));
+            result.res = null;
             return result;
         }
         throw new AssertionError("should not reach here");
@@ -330,10 +404,6 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             return new Result(new ArrayList<>());
         }
 
-        public Def alloc(Type type) {
-            return alloc(type, new Exp.UnExp(OpExp.UnOp.NONE, type.defVal()));
-        }
-
         public Def alloc(Type type, Exp rhs) {
             Var var = Var.allocTmp(type);
             Def def = new Def(var, rhs);
@@ -343,7 +413,9 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         }
 
         public void alloc(Type type, Var loc, Var off) {
-            Exp.Load load = new Exp.Load(loc, off);
+            Var pos = Var.allocTmp(loc.type());
+            block.add(Def.of(pos, new Exp.BiExp(PADD, loc, off)));
+            Exp.Load load = new Exp.Load(pos);
             Var var = Var.allocTmp(type);
             Def def = new Def(var, load);
             block.add(def);

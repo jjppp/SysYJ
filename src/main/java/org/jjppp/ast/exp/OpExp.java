@@ -10,6 +10,9 @@ public interface OpExp extends Exp {
 
     enum BiOp implements BinaryOperator<Val>, Op {
         ADD, SUB, MUL, DIV, MOD,
+        FADD, FSUB, FMUL, FDIV,
+        PADD, PSUB, PMUL,
+
         LE, LT, GE, GT, NE, EQ,
         AND, OR;
 
@@ -34,11 +37,13 @@ public interface OpExp extends Exp {
                 case NE, EQ -> 9;
                 case AND -> 8;
                 case OR -> 7;
+                default -> throw new AssertionError("TODO");
             };
         }
     }
 
     enum UnOp implements UnaryOperator<Val>, Op {
+        TOF, TOI,
         NEG, POS,
         NOT,
         NONE;
