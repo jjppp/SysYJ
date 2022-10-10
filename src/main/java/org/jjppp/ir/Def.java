@@ -2,7 +2,7 @@ package org.jjppp.ir;
 
 import org.jjppp.ast.exp.OpExp;
 
-public record Def(Var var, Exp rhs) implements IR {
+public record Def(Var var, Exp rhs) implements Instr {
     public static Def of(Var var) {
         return Def.of(var, var.type().defVal());
     }

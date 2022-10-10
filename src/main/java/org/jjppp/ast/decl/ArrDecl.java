@@ -7,8 +7,8 @@ import java.util.List;
 
 public record ArrDecl(String name, ArrType type, boolean isGlobal) implements Decl {
     public static ArrDecl of(String name, ArrType type, boolean isGlobal) {
-        throw new UnsupportedOperationException("array not supported");
-//        return new ArrDecl(name, type, isGlobal);
+//        throw new UnsupportedOperationException("array not supported");
+        return new ArrDecl(name, type, isGlobal);
     }
 
     private String printWidths(List<Integer> widths) {

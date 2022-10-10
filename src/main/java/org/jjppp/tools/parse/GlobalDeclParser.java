@@ -62,7 +62,7 @@ public final class GlobalDeclParser extends DefaultVisitor<List<Decl>> {
                     SymTab.addVar(varDecl, null);
                 }
             });
-            funDecl.setBody(StmtParser.parseBlock(ctx.block()));
+            funDecl.setBody(StmtParser.parseBlock(ctx.scope()));
         }
         SymTab.pop();
         return Collections.singletonList(funDecl);

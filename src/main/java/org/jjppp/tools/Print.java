@@ -40,7 +40,7 @@ public final class Print implements ASTVisitor<String> {
     }
 
     public String prettyPrint() {
-        Block body = SymTab.getInitBlock();
+        Scope body = SymTab.getInitBlock();
         FunType funType = FunType.from(VoidType.getInstance(), Collections.emptyList());
         FunDecl initFun = FunDecl.of("_init", funType, Collections.emptyList(), body);
 
@@ -86,8 +86,8 @@ public final class Print implements ASTVisitor<String> {
     }
 
     private String bracketOf(ASTNode cont) {
-        if (cont instanceof Block block) {
-            return print(block);
+        if (cont instanceof Scope scope) {
+            return print(scope);
         } else {
             StringBuilder result = new StringBuilder(" {");
             tabs += TAB_SIZE;
@@ -203,7 +203,7 @@ public final class Print implements ASTVisitor<String> {
     }
 
     @Override
-    public String visit(Block stmt) {
+    public String visit(Scope stmt) {
         List<Item> items = new ArrayList<>(stmt.items());
         return bracketOf(items);
     }
@@ -248,7 +248,7 @@ public final class Print implements ASTVisitor<String> {
 
     @Override
     public String visit(While stmt) {
-        if (stmt.body() instanceof Block) {
+        if (stmt.body() instanceof Scope) {
             return "while (" + print(stmt.cond())
                     + ") " + print(stmt.body());
         } else {

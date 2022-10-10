@@ -10,8 +10,8 @@ Coming soon.
 - [ ] Type check
 - [X] Convert to my AST
 - [X] Resolve symbols
-- [X] Linear IR design (optional)
-- [ ] CFG generation
+- [X] Linear IR design
+- [X] CFG construction
 - [ ] SSA transformation
 - [ ] Local optimization
 - [ ] Global optimization

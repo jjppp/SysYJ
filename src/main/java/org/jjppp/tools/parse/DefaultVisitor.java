@@ -78,7 +78,7 @@ public class DefaultVisitor<T> implements SysYVisitor<T> {
     }
 
     @Override
-    public T visitBlock(SysYParser.BlockContext ctx) {
+    public T visitScope(SysYParser.ScopeContext ctx) {
         return visitDefault();
     }
 

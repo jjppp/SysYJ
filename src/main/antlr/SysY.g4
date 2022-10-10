@@ -9,7 +9,7 @@ compUnit : decl*;
 decl
     : CONST bType def (',' def)* ';'                    #constDecl
     | bType def (',' def)* ';'                          #varDecl
-    | funcType ID '(' funcFParams? ')' block            #funcDecl
+    | funcType ID '(' funcFParams? ')' scope            #funcDecl
     ;
 
 bType : INT | FLOAT;
@@ -36,7 +36,7 @@ funcFParams : funcFParam (',' funcFParam)*;
 
 funcRParams : exp (',' exp)*;
 
-block : '{' blockItem* '}';
+scope : '{' blockItem* '}';
 
 blockItem
     : decl                                              #declItem
@@ -53,7 +53,7 @@ stmt
     | IF '(' cond ')' stmt                              #iftStmt
     | IF '(' cond ')' sTru=stmt ELSE sFls=stmt          #ifteStmt
     | WHILE '(' cond ')' stmt                           #whileStmt
-    | block                                             #blockStmt
+    | scope                                             #blockStmt
     ;
 
 lVal

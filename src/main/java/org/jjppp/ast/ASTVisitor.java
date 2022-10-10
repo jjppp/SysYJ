@@ -55,7 +55,7 @@ public interface ASTVisitor<R> {
         return visitDefault(stmt);
     }
 
-    default R visit(Block stmt) {
+    default R visit(Scope stmt) {
         return visitDefault(stmt);
     }
 

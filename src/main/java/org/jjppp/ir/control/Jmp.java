@@ -1,8 +1,8 @@
 package org.jjppp.ir.control;
 
-import org.jjppp.ir.IR;
+import org.jjppp.ir.Instr;
 
-public record Jmp(Label target) implements IR {
+public record Jmp(Label target) implements Instr {
     public static Jmp of(Label target) {
         return new Jmp(target);
     }

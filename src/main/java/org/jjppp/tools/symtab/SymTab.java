@@ -7,8 +7,8 @@ import org.jjppp.ast.exp.ArrValExp;
 import org.jjppp.ast.exp.Exp;
 import org.jjppp.ast.exp.FunExp;
 import org.jjppp.ast.stmt.Assign;
-import org.jjppp.ast.stmt.Block;
 import org.jjppp.ast.stmt.ExpStmt;
+import org.jjppp.ast.stmt.Scope;
 import org.jjppp.immutable.ImmutableStack;
 import org.jjppp.runtime.ArrVal;
 import org.jjppp.runtime.BaseVal;
@@ -38,12 +38,12 @@ public final class SymTab {
         mapStack = mapStack.pop();
     }
 
-    public static Block getInitBlock() {
-        Block block = Block.empty();
-        initBlock.forEach(block::add);
+    public static Scope getInitBlock() {
+        Scope scope = Scope.empty();
+        initBlock.forEach(scope::add);
         FunDecl main = (FunDecl) get("main").getDecl();
-        block.add(ExpStmt.of(FunExp.of(main, Collections.emptyList())));
-        return block;
+        scope.add(ExpStmt.of(FunExp.of(main, Collections.emptyList())));
+        return scope;
     }
 
     public static void addFun(FunDecl funDecl) {

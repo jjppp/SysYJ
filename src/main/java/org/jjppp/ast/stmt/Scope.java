@@ -6,21 +6,17 @@ import org.jjppp.ast.Item;
 import java.util.ArrayList;
 import java.util.List;
 
-public record Block(List<Item> items) implements Stmt {
-    public static Block empty() {
-        return new Block(new ArrayList<>());
+public record Scope(List<Item> items) implements Stmt {
+    public static Scope empty() {
+        return new Scope(new ArrayList<>());
     }
 
-    public static Block of(Item item) {
-        return new Block(List.of(item));
+    public static Scope of(Item item) {
+        return new Scope(List.of(item));
     }
 
     public void add(Item item) {
         items.add(item);
-    }
-
-    public void merge(Block after) {
-        items.addAll(after.items);
     }
 
     @Override

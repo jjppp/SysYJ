@@ -1,11 +1,9 @@
 package org.jjppp.ir.control;
 
-import org.jjppp.ir.IR;
+import org.jjppp.ir.Instr;
 import org.jjppp.ir.Var;
 
-import java.util.Optional;
-
-public record Ret(Optional<Var> var) implements IR {
+public record Ret(Var var) implements Instr {
     @Override
     public String toString() {
         return "ret " + var;

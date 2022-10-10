@@ -24,12 +24,13 @@ import org.jjppp.type.Type;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
 public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     private final static Transform3AC INSTANCE = new Transform3AC();
+    private static Var retVar;
+    private static Label exit;
     private final Stack<Label> contStack = new Stack<>();
     private final Stack<Label> breakStack = new Stack<>();
 
@@ -39,6 +40,12 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     public static IRCode transform(Program program) {
         List<Fun> funList = new ArrayList<>();
         for (FunDecl fun : program.funList()) {
+            retVar = Var.allocTmp(fun.type().retType());
+            exit = Label.alloc("exit");
+            Result body = transform(fun.getBody());
+            body.add(exit);
+            body.add(new Ret(retVar));
+
             Fun transformed = Fun.of(
                     fun.name(),
                     fun.type().retType(),
@@ -50,7 +57,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
                                     return x;
                                 }
                             }).collect(Collectors.toList()),
-                    transform(fun.getBody()).block);
+                    body.block);
             funList.add(transformed);
         }
         List<Alloc> allocList = new ArrayList<>();
@@ -190,7 +197,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     }
 
     @Override
-    public Result visit(Block stmt) {
+    public Result visit(Scope stmt) {
         Result result = Result.empty();
         stmt.items().stream()
                 .map(Transform3AC::transform)
@@ -251,14 +258,12 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     @Override
     public Result visit(Return stmt) {
-        Result result;
+        Result result = Result.empty();
         if (stmt.exp().isPresent()) {
             result = transform(stmt.exp().get());
-            result.add(new Ret(Optional.of(result.res)));
-        } else {
-            result = Result.empty();
-            result.add(new Ret(Optional.empty()));
+            result.add(Def.of(retVar, result.res));
         }
+        result.add(new Jmp(exit));
         return result;
     }
 
@@ -301,19 +306,19 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     }
 
     public static final class Result {
-        private final List<IR> block;
+        private final List<Instr> block;
         private Var res = null;
 
-        private Result(List<IR> block, Var res) {
+        private Result(List<Instr> block, Var res) {
             this.block = block;
             this.res = res;
         }
 
-        private Result(List<IR> block) {
+        private Result(List<Instr> block) {
             this.block = block;
         }
 
-        public static Result of(List<IR> block) {
+        public static Result of(List<Instr> block) {
             return new Result(block);
         }
 
@@ -345,8 +350,8 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             res = var;
         }
 
-        public void add(IR ir) {
-            block.add(ir);
+        public void add(Instr instr) {
+            block.add(instr);
         }
 
         public void merge(Result rhs) {

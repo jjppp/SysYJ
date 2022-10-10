@@ -1,7 +1,7 @@
 package org.jjppp.ast.decl;
 
 import org.jjppp.ast.ASTVisitor;
-import org.jjppp.ast.stmt.Block;
+import org.jjppp.ast.stmt.Scope;
 import org.jjppp.type.FunType;
 
 import java.util.Collections;
@@ -11,27 +11,27 @@ public final class FunDecl implements Decl {
     private final String name;
     private final FunType type;
     private final List<Decl> params;
-    private Block body;
+    private Scope body;
 
-    public FunDecl(String name, FunType type, List<Decl> params, Block body) {
+    public FunDecl(String name, FunType type, List<Decl> params, Scope body) {
         this.name = name;
         this.type = type;
         this.params = params;
         this.body = body;
     }
 
-    public static FunDecl of(String name, FunType type, List<Decl> params, Block body) {
+    public static FunDecl of(String name, FunType type, List<Decl> params, Scope body) {
         if (params == null) {
             params = Collections.emptyList();
         }
         return new FunDecl(name, type, params, body);
     }
 
-    public Block getBody() {
+    public Scope getBody() {
         return body;
     }
 
-    public void setBody(Block body) {
+    public void setBody(Scope body) {
         this.body = body;
     }
 

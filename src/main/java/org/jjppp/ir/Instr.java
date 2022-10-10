@@ -1,4 +1,4 @@
 package org.jjppp.ir;
 
-public interface IR {
+public interface Instr {
 }

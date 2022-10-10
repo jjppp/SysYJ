@@ -19,13 +19,21 @@ public final class ParserTest {
         return parser.parse();
     }
 
-    private static Program fromFile(String filename) {
+    public static Program fromFile(String filename) {
         try {
             Parser parser = new Parser(CharStreams.fromFileName(path + filename));
             return parser.parse();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void print(String filename) {
+        System.out.println(filename);
+        Program program = fromFile(filename);
+        Print print = new Print(program);
+        System.out.println(print.prettyPrint());
+        System.out.println(Transform3AC.transform(program));
     }
 
     @Test
@@ -36,14 +44,6 @@ public final class ParserTest {
         assertEquals(Int.from(17), Int.fromHex("11"));
         assertEquals(Int.from(1), Int.fromOct("01"));
         assertEquals(Int.from(9), Int.fromOct("011"));
-    }
-
-    private void print(String filename) {
-        System.out.println(filename);
-        Program program = fromFile(filename);
-        Print print = new Print(program);
-        System.out.println(print.prettyPrint());
-        System.out.println(Transform3AC.transform(program));
     }
 
     @Test

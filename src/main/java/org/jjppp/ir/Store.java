@@ -7,7 +7,7 @@ package org.jjppp.ir;
  * @param off: offset
  * @param rhs
  */
-public record Store(Var var, Var off, Ope rhs) implements IR {
+public record Store(Var var, Var off, Ope rhs) implements Instr {
     @Override
     public String toString() {
         return var + "[" + off + "] = " + rhs;

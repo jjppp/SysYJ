@@ -17,26 +17,26 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
         return ctx.accept(INSTANCE);
     }
 
-    public static Block parseBlock(SysYParser.BlockContext ctx) {
+    public static Scope parseBlock(SysYParser.ScopeContext ctx) {
         // must be local
-        Block block = Block.empty();
+        Scope scope = Scope.empty();
         for (SysYParser.BlockItemContext blockItemCtx : ctx.blockItem()) {
             if (blockItemCtx instanceof SysYParser.DeclItemContext declItemCtx) {
                 SysYParser.DeclContext declCtx = declItemCtx.decl();
                 if (declCtx instanceof SysYParser.ConstDeclContext constDeclCtx) {
-                    block.items().addAll(LocalDeclParser.parse(constDeclCtx));
+                    scope.items().addAll(LocalDeclParser.parse(constDeclCtx));
                 } else if (declCtx instanceof SysYParser.VarDeclContext varDeclCtx) {
-                    block.items().addAll(LocalDeclParser.parse(varDeclCtx));
+                    scope.items().addAll(LocalDeclParser.parse(varDeclCtx));
                 } else {
                     throw new AssertionError("Should not reach here");
                 }
             } else if (blockItemCtx instanceof SysYParser.StmtItemContext stmtItemCtx) {
-                block.add(StmtParser.parse(stmtItemCtx.stmt()));
+                scope.add(StmtParser.parse(stmtItemCtx.stmt()));
             } else {
                 throw new AssertionError("Should not reach here");
             }
         }
-        return block;
+        return scope;
     }
 
     @Override
@@ -95,7 +95,7 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
     }
 
     @Override
-    public Block visitBlockStmt(SysYParser.BlockStmtContext ctx) {
-        return parseBlock(ctx.block());
+    public Scope visitBlockStmt(SysYParser.BlockStmtContext ctx) {
+        return parseBlock(ctx.scope());
     }
 }

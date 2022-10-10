@@ -6,8 +6,8 @@ import org.jjppp.type.Type;
 
 import java.util.List;
 
-public record Fun(String name, BaseType retType, List<Type> argTypes, List<IR> body) {
-    public static Fun of(String name, BaseType retType, List<Type> argTypes, List<IR> body) {
+public record Fun(String name, BaseType retType, List<Type> argTypes, List<Instr> body) {
+    public static Fun of(String name, BaseType retType, List<Type> argTypes, List<Instr> body) {
         return new Fun(name, retType, argTypes, body);
     }
 
