@@ -1,13 +1,13 @@
 package org.jjppp.ir.cfg;
 
 import org.jjppp.ir.Instr;
+import org.jjppp.ir.Var;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class Block implements Iterable<Instr> {
-    private final ArrayList<Instr> instrList;
+    private List<Instr> instrList;
 
     public Block(List<Instr> instrList) {
         this.instrList = new ArrayList<>(instrList);
@@ -21,6 +21,27 @@ public final class Block implements Iterable<Instr> {
         return new Block(List.of(instr));
     }
 
+    public void add(Instr instr) {
+        instrList.add(instr);
+    }
+
+    public Instr lastInstr() {
+        return instrList.get(instrList.size() - 1);
+    }
+
+    public Set<Var> useSet() {
+        return instrList.stream()
+                .map(Instr::useSet)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+    }
+
+    public void dce() {
+        instrList = instrList.stream()
+                .filter(x -> !x.dead())
+                .collect(Collectors.toList());
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -30,20 +51,8 @@ public final class Block implements Iterable<Instr> {
         return builder.toString();
     }
 
-    public void add(Instr instr) {
-        instrList.add(instr);
-    }
-
-    public Instr lastInstr() {
-        return instrList.get(instrList.size() - 1);
-    }
-
-    public List<Instr> getInstrs() {
-        return instrList;
-    }
-
-    public int size() {
-        return instrList.size();
+    public boolean isEmpty() {
+        return instrList.isEmpty();
     }
 
     @Override

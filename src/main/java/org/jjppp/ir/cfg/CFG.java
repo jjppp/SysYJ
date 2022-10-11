@@ -1,6 +1,7 @@
 package org.jjppp.ir.cfg;
 
 import org.jjppp.ir.Fun;
+import org.jjppp.ir.Var;
 
 import java.io.FileOutputStream;
 import java.util.*;
@@ -56,8 +57,15 @@ public final class CFG {
         return blockNodeMap.get(block);
     }
 
+    public Set<Var> useSet() {
+        return nodes().stream()
+                .map(Node::block)
+                .map(Block::useSet)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+    }
+
     public void addBlock(Block block) {
-        System.out.println("===\n" + block.getInstrs());
         Node node = new Node(block);
         nodes().add(node);
         blockNodeMap.put(block, node);
@@ -77,6 +85,7 @@ public final class CFG {
         try (var outputStream = new FileOutputStream(folderPath + fun.name() + ".dot")) {
             outputStream.write(this.toString().getBytes());
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new RuntimeException(e);
         }
     }

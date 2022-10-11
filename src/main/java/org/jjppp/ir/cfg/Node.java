@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class Node {
-    private final Block block;
     private final Set<Node> succ = new HashSet<>();
     private final Set<Node> pred = new HashSet<>();
+    private Block block;
 
     public Node(Block block) {
         this.block = block;
@@ -30,5 +30,9 @@ public final class Node {
 
     public Block block() {
         return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
     }
 }

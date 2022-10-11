@@ -36,7 +36,7 @@ public final class CFGBuilder {
                 }
                 block = Block.empty();
             } else if (instr instanceof Label label) {
-                if (block.size() != 0) {
+                if (!block.isEmpty()) {
                     cfg.addBlock(block);
                     if (last != null) {
                         cfg.addEdge(last, block, Edge.EDGE_TYPE.FALL_THROUGH);
@@ -50,8 +50,11 @@ public final class CFGBuilder {
             }
         }
 
-        if (block.size() != 0) {
+        if (!block.isEmpty()) {
             cfg.addBlock(block);
+            if (last != null) {
+                cfg.addEdge(last, block, Edge.EDGE_TYPE.FALL_THROUGH);
+            }
         }
 
         for (Node node : cfg.nodes()) {

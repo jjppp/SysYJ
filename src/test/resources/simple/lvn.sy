@@ -1,0 +1,6 @@
+const int N = 2005;
+
+int main(int x, int y) {
+    int a = x + 1;
+    int b = x + 1;
+}
