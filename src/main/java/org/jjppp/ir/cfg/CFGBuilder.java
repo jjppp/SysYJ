@@ -1,61 +1,73 @@
 package org.jjppp.ir.cfg;
 
 import org.jjppp.ir.Fun;
+import org.jjppp.ir.cfg.CFG.Node;
 import org.jjppp.ir.control.Br;
 import org.jjppp.ir.control.Jmp;
 import org.jjppp.ir.control.Label;
 import org.jjppp.ir.instr.Instr;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public final class CFGBuilder {
-    public static CFG buildFrom(Fun fun) {
-        List<Instr> instrList = fun.body();
-        Map<Label, Block> labelBlockMap = new HashMap<>();
-        Block block = Block.empty();
-        CFG cfg = new CFG(fun);
-        Block last = null;
+    private final List<Instr> instrList;
+    private final Map<Label, Block> labelBlockMap;
+    private final CFG cfg;
 
+    public CFGBuilder(Fun fun) {
+        instrList = fun.body();
+        labelBlockMap = new HashMap<>();
+        cfg = new CFG(fun);
+    }
+
+    private List<Block> grouping() {
+        List<Block> blockList = new ArrayList<>();
+        Block block = Block.empty();
         for (Instr instr : instrList) {
-            if (instr instanceof Jmp jmp) {
-                block.add(jmp);
-                cfg.addBlock(block);
-                if (last != null) {
-                    cfg.addEdge(last, block, Edge.EDGE_TYPE.FALL_THROUGH);
-                    last = null;
-                }
-                block = Block.empty();
-            } else if (instr instanceof Br br) {
-                block.add(br);
-                cfg.addBlock(block);
-                if (last != null) {
-                    cfg.addEdge(last, block, Edge.EDGE_TYPE.FALL_THROUGH);
-                    last = null;
-                }
-                block = Block.empty();
-            } else if (instr instanceof Label label) {
+            if (instr instanceof Label label) {
                 if (!block.isEmpty()) {
-                    cfg.addBlock(block);
-                    if (last != null) {
-                        cfg.addEdge(last, block, Edge.EDGE_TYPE.FALL_THROUGH);
-                    }
-                    last = block;
+                    blockList.add(block);
                 }
                 block = Block.of(label);
                 labelBlockMap.put(label, block);
             } else {
                 block.add(instr);
+                if (instr instanceof Jmp) {
+                    blockList.add(block);
+                    block = Block.empty();
+                } else if (instr instanceof Br) {
+                    blockList.add(block);
+                    block = Block.empty();
+                }
             }
         }
 
         if (!block.isEmpty()) {
+            blockList.add(block);
+        }
+        return blockList;
+    }
+
+    public CFG build() {
+        Block last = null;
+        List<Block> blockList = grouping();
+
+        for (Block block : blockList) {
             cfg.addBlock(block);
             if (last != null) {
                 cfg.addEdge(last, block, Edge.EDGE_TYPE.FALL_THROUGH);
+                last = null;
+            }
+            if (!(block.lastInstr() instanceof Jmp
+                    || block.lastInstr() instanceof Br)) {
+                last = block;
             }
         }
+        cfg.setEntry(blockList.get(0));
+        cfg.setExit(blockList.get(blockList.size() - 1));
 
         for (Node node : cfg.nodes()) {
             Block from = node.block();

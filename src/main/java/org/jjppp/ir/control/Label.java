@@ -7,21 +7,7 @@ import org.jjppp.ir.instr.InstrVisitor;
 import java.util.Collections;
 import java.util.Set;
 
-public final class Label implements Instr {
-    private static int labelCount = -1;
-    private final String name;
-    private final int id;
-
-    public Label(String name, int id) {
-        this.name = name;
-        this.id = id;
-    }
-
-    public static Label alloc(String name) {
-        labelCount += 1;
-        return new Label(name, labelCount);
-    }
-
+public record Label(String name, int id) implements Instr {
     @Override
     public boolean hasEffect() {
         return true;

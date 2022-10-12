@@ -12,13 +12,18 @@ public final class OptTest {
         Program program = ParserTest.fromFile(filepath);
         IRCode code = Transform3AC.transform(program);
         for (var fun : code.funList()) {
-            CFG cfg = CFGBuilder.buildFrom(fun);
+            CFGBuilder builder = new CFGBuilder(fun);
+            CFG cfg = builder.build();
             cfg.toFolder("/home/jjppp/tmp/cfg/");
             cfg.nodes().forEach(x -> x.setBlock(LVN.doLVN(x.block())));
-            DCE dce = new DCE(cfg);
-            cfg.nodes().forEach(x -> x.setBlock(dce.doDCE(x.block())));
+            DCE.doDCE(cfg);
             cfg.toFolder("/home/jjppp/tmp/cfg/opt-");
         }
+    }
+
+    @Test
+    void testDead() {
+        run("simple/dead.sy");
     }
 
     @Test

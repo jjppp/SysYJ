@@ -15,7 +15,8 @@ public final class CFGTest {
         for (Fun fun : code.funList()) {
             String folderPath = "/tmp/cfg/";
             System.out.println(folderPath);
-            CFGBuilder.buildFrom(fun)
+            CFGBuilder builder = new CFGBuilder(fun);
+            builder.build()
                     .toFolder(folderPath);
         }
     }
@@ -30,8 +31,8 @@ public final class CFGTest {
         for (Fun fun : code.funList()) {
             String folderPath = "/tmp/cfg/";
             System.out.println(folderPath);
-            CFGBuilder.buildFrom(fun)
-                    .toFolder(folderPath);
+            CFGBuilder builder = new CFGBuilder(fun);
+            builder.build().toFolder(folderPath);
         }
     }
 }

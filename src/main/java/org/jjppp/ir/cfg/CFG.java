@@ -10,7 +10,9 @@ import java.util.stream.Collectors;
 public final class CFG {
     private final Fun fun;
     private final Map<Block, Node> blockNodeMap = new HashMap<>();
-    private final Set<Edge> edges = new HashSet<>();
+    private final Map<Node, Map<Node, Edge>> edgeFrom = new HashMap<>();
+    private Node entry = null;
+    private Node exit = null;
 
     public CFG(Fun fun) {
         this.fun = fun;
@@ -24,9 +26,13 @@ public final class CFG {
         int cnt = 0;
         for (var node : nodes()) {
             map.put(node, cnt);
-            builder.append(cnt)
-                    .append(" [shape=rectangle, label=\"")
-                    .append(node.block().toString())
+            builder.append(cnt);
+            if (node.equals(entry()) || node.equals(exit())) {
+                builder.append(" [shape=rect, style=filled, fillcolor=gray, label=\"");
+            } else {
+                builder.append(" [shape=box, label=\"");
+            }
+            builder.append(node.block().toString())
                     .append("\"];\n");
             cnt += 1;
         }
@@ -43,6 +49,22 @@ public final class CFG {
         return builder.append("}").toString();
     }
 
+    public void setEntry(Block entry) {
+        this.entry = blockNodeMap.get(entry);
+    }
+
+    public void setExit(Block exit) {
+        this.exit = blockNodeMap.get(exit);
+    }
+
+    public Node entry() {
+        return Optional.ofNullable(entry).orElseThrow();
+    }
+
+    public Node exit() {
+        return Optional.of(exit).orElseThrow();
+    }
+
     public Set<Node> nodes() {
         return blockNodeMap.keySet().stream()
                 .map(this::fromBlock)
@@ -50,7 +72,10 @@ public final class CFG {
     }
 
     public Set<Edge> edges() {
-        return edges;
+        return edgeFrom.values().stream()
+                .map(Map::values)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
     }
 
     public Node fromBlock(Block block) {
@@ -69,6 +94,22 @@ public final class CFG {
         Node node = new Node(block);
         nodes().add(node);
         blockNodeMap.put(block, node);
+        edgeFrom.put(node, new HashMap<>());
+    }
+
+    public void removeBlock(Block block) {
+        Node node = blockNodeMap.get(block);
+        var tmp = edgeFrom.keySet().toArray();
+        System.out.println(tmp[1].equals(block));
+        System.out.println(tmp[0].equals(block));
+        System.out.println(tmp[2].equals(block));
+        blockNodeMap.remove(block);
+        edgeFrom.remove(node);
+        for (var pred : node.getPred()) {
+            edgeFrom.get(pred).remove(node);
+        }
+        node.getSucc().forEach(x -> x.removePred(node));
+        node.getPred().forEach(x -> x.removeSucc(node));
     }
 
     public void addEdge(Block from, Block to, Edge.EDGE_TYPE type) {
@@ -76,7 +117,7 @@ public final class CFG {
         Objects.requireNonNull(to);
         Node fromNode = fromBlock(from);
         Node toNode = fromBlock(to);
-        edges().add(new Edge(fromNode, toNode, type));
+        edgeFrom.get(fromNode).put(toNode, new Edge(fromNode, toNode, type));
         fromNode.addSucc(toNode);
         toNode.addPred(fromNode);
     }
@@ -89,4 +130,49 @@ public final class CFG {
             throw new RuntimeException(e);
         }
     }
+
+    public final class Node {
+        private final Set<Node> succ = new HashSet<>();
+        private final Set<Node> pred = new HashSet<>();
+        private Block block;
+
+        public Node(Block block) {
+            this.block = block;
+        }
+
+        public Set<Node> getSucc() {
+            return succ;
+        }
+
+        public void removeSucc(Node node) {
+            succ.remove(node);
+        }
+
+        public Set<Node> getPred() {
+            return pred;
+        }
+
+        public void removePred(Node node) {
+            pred.remove(node);
+        }
+
+        public void addSucc(Node succ) {
+            this.succ.add(succ);
+        }
+
+        public void addPred(Node pred) {
+            this.pred.add(pred);
+        }
+
+        public Block block() {
+            return block;
+        }
+
+        public void setBlock(Block block) {
+            blockNodeMap.remove(this.block);
+            this.block = block;
+            blockNodeMap.put(block, this);
+        }
+    }
+
 }

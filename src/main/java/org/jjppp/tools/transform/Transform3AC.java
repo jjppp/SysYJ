@@ -16,10 +16,7 @@ import org.jjppp.ir.Fun;
 import org.jjppp.ir.IRCode;
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
-import org.jjppp.ir.control.Br;
-import org.jjppp.ir.control.Jmp;
-import org.jjppp.ir.control.Label;
-import org.jjppp.ir.control.Ret;
+import org.jjppp.ir.control.*;
 import org.jjppp.ir.instr.*;
 import org.jjppp.ir.type.BaseType;
 import org.jjppp.ir.type.Loc;
@@ -69,7 +66,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
             FunType funType = funDecl.type();
             retVar = Var.allocTmp(BaseType.from(funType.retType()));
-            exit = Label.alloc("exit");
+            exit = LabelFactory.alloc("exit");
             Result body = transform(funDecl.getBody());
             body.add(exit);
             body.add(new Ret(retVar));
@@ -288,8 +285,8 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     @Override
     public Result visit(If stmt) {
-        Label lTru = Label.alloc("true");
-        Label lFls = Label.alloc("false");
+        Label lTru = LabelFactory.alloc("true");
+        Label lFls = LabelFactory.alloc("false");
         breakStack.add(lFls);
 
         Result cond = transform(stmt.cond());
@@ -306,9 +303,9 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     @Override
     public Result visit(Ife stmt) {
-        Label lTru = Label.alloc("true");
-        Label lFls = Label.alloc("false");
-        Label lEnd = Label.alloc("end");
+        Label lTru = LabelFactory.alloc("true");
+        Label lFls = LabelFactory.alloc("false");
+        Label lEnd = LabelFactory.alloc("end");
         breakStack.add(lEnd);
 
         Result cond = transform(stmt.cond());
@@ -354,9 +351,9 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     @Override
     public Result visit(While stmt) {
-        Label lCond = Label.alloc("cond");
-        Label lTru = Label.alloc("true");
-        Label lFls = Label.alloc("false");
+        Label lCond = LabelFactory.alloc("cond");
+        Label lTru = LabelFactory.alloc("true");
+        Label lFls = LabelFactory.alloc("false");
         contStack.add(lCond);
         breakStack.add(lFls);
 
