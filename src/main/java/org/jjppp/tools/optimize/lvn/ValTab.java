@@ -1,10 +1,8 @@
-package org.jjppp.tools.optimize;
+package org.jjppp.tools.optimize.lvn;
 
-import org.jjppp.ast.exp.OpExp;
-import org.jjppp.ir.Exp;
+import org.jjppp.ast.exp.op.BiOp;
+import org.jjppp.ast.exp.op.UnOp;
 import org.jjppp.ir.Ope;
-import org.jjppp.ir.Var;
-import org.jjppp.runtime.BaseVal;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,42 +14,13 @@ public final class ValTab {
     private final Map<Integer, ValEntry> tab = new HashMap<>();
     private int ID_COUNT = 0;
 
-    public int from(Ope ope) {
-        Val rawVal = new Val.RawVal(ope);
-        if (ope instanceof BaseVal) {
-            if (!contains(rawVal)) return alloc(rawVal, ope);
-            return get(rawVal);
-        } else if (ope instanceof Var var) {
-            Integer holdingID = holding(var);
-            if (holdingID != null) {
-                return holdingID;
-            } else {
-                int id = alloc(rawVal, ope);
-                hold.put(ope, id);
-                return id;
-            }
-        }
-        throw new AssertionError("TODO");
-    }
-
-    public Val from(Exp exp) {
-        if (exp instanceof Exp.UnExp unExp) {
-            return new Val.UnVal(unExp.op(), from(unExp.sub()));
-        } else if (exp instanceof Exp.BiExp biExp) {
-            return new Val.BiVal(biExp.op(), from(biExp.lhs()), from(biExp.rhs()));
-        } else if (exp instanceof Exp.Load load) {
-            return Val.LdVal.alloc(from(load.loc()));
-        }
-        throw new AssertionError("TODO");
-    }
-
     public boolean contains(Val val) {
         return get(val) != null;
     }
 
     public int alloc(Val val, Ope belong) {
         valIdMap.put(val, ID_COUNT);
-        tab.put(ID_COUNT, new ValEntry(val, ID_COUNT, belong));
+        tab.put(ID_COUNT, new ValEntry(belong));
         return ID_COUNT++;
     }
 
@@ -84,10 +53,10 @@ public final class ValTab {
     }
 
     interface Val {
-        record BiVal(OpExp.BiOp op, int lhs, int rhs) implements Val {
+        record BiVal(BiOp op, int lhs, int rhs) implements Val {
         }
 
-        record UnVal(OpExp.UnOp op, int sub) implements Val {
+        record UnVal(UnOp op, int sub) implements Val {
         }
 
         final class LdVal implements Val {
@@ -128,19 +97,9 @@ public final class ValTab {
     }
 
     public static final class ValEntry {
-        private final Val val;
-        private final int id;
         private Ope belong;
 
-        public ValEntry(Val val, int id) {
-            this.val = val;
-            this.id = id;
-            this.belong = null;
-        }
-
-        public ValEntry(Val val, int id, Ope belong) {
-            this.val = val;
-            this.id = id;
+        public ValEntry(Ope belong) {
             this.belong = belong;
         }
 

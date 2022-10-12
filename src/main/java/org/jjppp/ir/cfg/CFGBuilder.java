@@ -1,10 +1,10 @@
 package org.jjppp.ir.cfg;
 
 import org.jjppp.ir.Fun;
-import org.jjppp.ir.Instr;
 import org.jjppp.ir.control.Br;
 import org.jjppp.ir.control.Jmp;
 import org.jjppp.ir.control.Label;
+import org.jjppp.ir.instr.Instr;
 
 import java.util.HashMap;
 import java.util.List;

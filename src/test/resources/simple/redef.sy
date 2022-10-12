@@ -1,0 +1,20 @@
+const int N = 2005;
+
+int common_sub_exp(int x, int y) {
+    int a = 1 + 2;
+    int b = 1 + 2;
+    a = 3;
+    b = 4;
+    int c = 1 + 2;
+    return a * b * c;
+}
+
+int redef(int x, int y) {
+    int a = x + 1;
+    x = x * 2;
+    int b = x + 1;
+    return a + b;
+}
+
+int main() {
+}

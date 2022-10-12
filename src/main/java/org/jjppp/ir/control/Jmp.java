@@ -1,35 +1,31 @@
 package org.jjppp.ir.control;
 
-import org.jjppp.ir.Instr;
 import org.jjppp.ir.Var;
+import org.jjppp.ir.instr.Instr;
+import org.jjppp.ir.instr.InstrVisitor;
 
 import java.util.Collections;
 import java.util.Set;
 
-public final class Jmp implements Instr {
-    private final Label target;
-    private boolean dead = false;
-
-    public Jmp(Label target) {
-        this.target = target;
-    }
+public record Jmp(Label target) implements Instr {
 
     public static Jmp of(Label target) {
         return new Jmp(target);
     }
 
-    public Label target() {
-        return target;
+    @Override
+    public boolean hasEffect() {
+        return true;
     }
 
     @Override
-    public void setDead() {
-        dead = true;
+    public <R> R accept(InstrVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
-    public boolean dead() {
-        return dead;
+    public Var var() {
+        return null;
     }
 
     @Override

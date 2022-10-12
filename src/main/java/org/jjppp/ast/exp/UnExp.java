@@ -2,6 +2,7 @@ package org.jjppp.ast.exp;
 
 import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.Unary;
+import org.jjppp.ast.exp.op.UnOp;
 import org.jjppp.runtime.Val;
 import org.jjppp.type.FloatType;
 import org.jjppp.type.IntType;
@@ -42,7 +43,7 @@ public class UnExp extends Unary<Exp> implements OpExp {
             Type subType = getSub().type();
             type = switch (getOp()) {
                 case TOI, NOT -> IntType.ofNonConst();
-                case POS, NEG, NONE -> subType;
+                case POS, NEG -> subType;
                 case TOF -> FloatType.ofNonConst();
             };
         }

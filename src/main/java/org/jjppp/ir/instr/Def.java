@@ -1,17 +1,19 @@
-package org.jjppp.ir.control;
+package org.jjppp.ir.instr;
 
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
-import org.jjppp.ir.instr.Instr;
-import org.jjppp.ir.instr.InstrVisitor;
 
 import java.util.Collections;
 import java.util.Set;
 
-public record Ret(Ope retVal) implements Instr {
+public record Def(Var var, Ope rhs) implements Instr {
+    public static Def of(Var var, Ope ope) {
+        return new Def(var, ope);
+    }
+
     @Override
     public boolean hasEffect() {
-        return true;
+        return false;
     }
 
     @Override
@@ -20,20 +22,15 @@ public record Ret(Ope retVal) implements Instr {
     }
 
     @Override
-    public Var var() {
-        return null;
-    }
-
-    @Override
     public Set<Var> useSet() {
-        if (retVal instanceof Var var) {
-            return Set.of(var);
+        if (rhs instanceof Var) {
+            return Set.of((Var) rhs);
         }
         return Collections.emptySet();
     }
 
     @Override
     public String toString() {
-        return "ret " + retVal;
+        return var.type() + " " + var + " = " + rhs;
     }
 }

@@ -9,6 +9,8 @@ import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.*;
+import org.jjppp.ast.exp.op.BiOp;
+import org.jjppp.ast.exp.op.Op;
 import org.jjppp.ast.stmt.*;
 import org.jjppp.runtime.Val;
 
@@ -147,7 +149,7 @@ public final class Print implements ASTVisitor<String> {
 
     @Override
     public String visit(BinExp exp) {
-        OpExp.Op op = exp.getOp();
+        Op op = exp.getOp();
         Exp lhs = exp.getLhs();
         Exp rhs = exp.getRhs();
         String lhsString = print(lhs);
@@ -162,7 +164,7 @@ public final class Print implements ASTVisitor<String> {
         if (rhs instanceof OpExp opExp) {
             int p = opExp.getOp().prior();
             if (p < op.prior()
-                    || op.equals(OpExp.BiOp.SUB) && p == op.prior()) {
+                    || op.equals(BiOp.SUB) && p == op.prior()) {
                 rhsString = "(" + rhsString + ")";
             }
         }

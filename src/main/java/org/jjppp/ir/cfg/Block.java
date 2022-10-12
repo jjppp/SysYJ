@@ -1,13 +1,13 @@
 package org.jjppp.ir.cfg;
 
-import org.jjppp.ir.Instr;
 import org.jjppp.ir.Var;
+import org.jjppp.ir.instr.Instr;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class Block implements Iterable<Instr> {
-    private List<Instr> instrList;
+    private final List<Instr> instrList;
 
     public Block(List<Instr> instrList) {
         this.instrList = new ArrayList<>(instrList);
@@ -36,10 +36,8 @@ public final class Block implements Iterable<Instr> {
                 .collect(Collectors.toSet());
     }
 
-    public void dce() {
-        instrList = instrList.stream()
-                .filter(x -> !x.dead())
-                .collect(Collectors.toList());
+    public List<Instr> instrList() {
+        return instrList;
     }
 
     @Override

@@ -3,6 +3,8 @@ package org.jjppp.tools.parse;
 import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.exp.*;
+import org.jjppp.ast.exp.op.BiOp;
+import org.jjppp.ast.exp.op.UnOp;
 import org.jjppp.parser.SysYParser;
 import org.jjppp.tools.symtab.ConstSymEntry;
 import org.jjppp.tools.symtab.SymTab;
@@ -45,8 +47,8 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     public Exp visitUnaryExp(SysYParser.UnaryExpContext ctx) {
         return UnExp.of(
                 switch (ctx.op.getText().charAt(0)) {
-                    case '+' -> OpExp.UnOp.POS;
-                    case '-' -> OpExp.UnOp.NEG;
+                    case '+' -> UnOp.POS;
+                    case '-' -> UnOp.NEG;
                     default -> throw new ParserException("unknown op");
                 },
                 parse(ctx.exp()));
@@ -61,8 +63,8 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     public Exp visitAddExp(SysYParser.AddExpContext ctx) {
         return BinExp.of(
                 switch (ctx.op.getText().charAt(0)) {
-                    case '+' -> OpExp.BiOp.ADD;
-                    case '-' -> OpExp.BiOp.SUB;
+                    case '+' -> BiOp.ADD;
+                    case '-' -> BiOp.SUB;
                     default -> throw new ParserException("unknown op");
                 },
                 parse(ctx.lhs),
@@ -73,9 +75,9 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     public Exp visitMulExp(SysYParser.MulExpContext ctx) {
         return BinExp.of(
                 switch (ctx.op.getText().charAt(0)) {
-                    case '*' -> OpExp.BiOp.MUL;
-                    case '/' -> OpExp.BiOp.DIV;
-                    case '%' -> OpExp.BiOp.MOD;
+                    case '*' -> BiOp.MUL;
+                    case '/' -> BiOp.DIV;
+                    case '%' -> BiOp.MOD;
                     default -> throw new ParserException("unknown op");
                 },
                 parse(ctx.lhs),

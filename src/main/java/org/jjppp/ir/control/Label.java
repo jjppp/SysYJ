@@ -1,17 +1,16 @@
 package org.jjppp.ir.control;
 
-import org.jjppp.ir.Instr;
 import org.jjppp.ir.Var;
+import org.jjppp.ir.instr.Instr;
+import org.jjppp.ir.instr.InstrVisitor;
 
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Set;
 
 public final class Label implements Instr {
     private static int labelCount = -1;
     private final String name;
     private final int id;
-    private boolean dead = false;
 
     public Label(String name, int id) {
         this.name = name;
@@ -24,27 +23,18 @@ public final class Label implements Instr {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o instanceof Label label) {
-            return name.equals(label.name) && id == label.id && dead == label.dead;
-        }
-        return false;
+    public boolean hasEffect() {
+        return true;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id, name, dead);
+    public <R> R accept(InstrVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
-    public void setDead() {
-        dead = true;
-    }
-
-    @Override
-    public boolean dead() {
-        return dead;
+    public Var var() {
+        return null;
     }
 
     @Override

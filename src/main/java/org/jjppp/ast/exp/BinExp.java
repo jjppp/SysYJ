@@ -3,6 +3,7 @@ package org.jjppp.ast.exp;
 import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.Binary;
 import org.jjppp.ast.decl.VarDecl;
+import org.jjppp.ast.exp.op.BiOp;
 import org.jjppp.runtime.Int;
 import org.jjppp.runtime.Val;
 import org.jjppp.type.IntType;

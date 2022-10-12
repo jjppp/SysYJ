@@ -1,6 +1,7 @@
 package org.jjppp.ir;
 
 import org.jjppp.ir.control.Label;
+import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.type.BaseType;
 import org.jjppp.ir.type.Type;
 

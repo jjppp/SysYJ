@@ -7,16 +7,20 @@ import org.jjppp.ast.decl.ArrDecl;
 import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.decl.VarDecl;
+import org.jjppp.ast.exp.UnExp;
 import org.jjppp.ast.exp.*;
+import org.jjppp.ast.exp.op.BiOp;
+import org.jjppp.ast.exp.op.UnOp;
 import org.jjppp.ast.stmt.*;
-import org.jjppp.ir.Exp;
-import org.jjppp.ir.*;
+import org.jjppp.ir.Fun;
+import org.jjppp.ir.IRCode;
+import org.jjppp.ir.Ope;
+import org.jjppp.ir.Var;
 import org.jjppp.ir.control.Br;
 import org.jjppp.ir.control.Jmp;
 import org.jjppp.ir.control.Label;
 import org.jjppp.ir.control.Ret;
-import org.jjppp.ir.mem.LAlloc;
-import org.jjppp.ir.mem.Store;
+import org.jjppp.ir.instr.*;
 import org.jjppp.ir.type.BaseType;
 import org.jjppp.ir.type.Loc;
 import org.jjppp.ir.type.Type;
@@ -28,7 +32,7 @@ import org.jjppp.type.FunType;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.jjppp.ast.exp.OpExp.BiOp.PADD;
+import static org.jjppp.ast.exp.op.BiOp.PADD;
 
 public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     private final static Transform3AC INSTANCE = new Transform3AC();
@@ -75,9 +79,9 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         for (Decl decl : program.globalDecls()) {
             if (decl instanceof ArrDecl arrDecl) {
                 // TODO: check global def using alloc
-                irCode.add(Def.from(Var.from(arrDecl), arrDecl));
+                irCode.add(Instr.from(Var.from(arrDecl), arrDecl));
             } else if (decl instanceof VarDecl varDecl) {
-                irCode.add(Def.from(Var.from(varDecl), varDecl));
+                irCode.add(Instr.from(Var.from(varDecl), varDecl));
             }
         }
         return irCode;
@@ -95,7 +99,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             throw new AssertionError("TODO");
         } else {
             Var tmp = new Var(decl, Loc.from(decl), -1);
-            result.add(Def.of(tmp, LAlloc.from(decl)));
+            result.add(LAlloc.from(tmp, decl));
         }
         return result;
     }
@@ -106,10 +110,9 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Result result;
         if (decl.defValExp().isPresent()) {
             result = transform(decl.defValExp().get());
-            result.add(Def.of(Var.from(decl), result.res));
+            result.add(Def.of(Var.from(decl), result.res()));
         } else {
             result = Result.empty();
-            result.add(Def.of(Var.from(decl), decl.type().defVal()));
         }
         return result;
     }
@@ -121,17 +124,15 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Result result;
         if (exp.indices().size() != 0) {
             result = transform(arr.type(), exp.indices());
-            Var off = result.res;
+            Var off = result.res();
             org.jjppp.type.Type expType = exp.type();
             if (expType instanceof org.jjppp.type.BaseType) {
                 /* int arr[2][3][4][5]
                  * int c = arr[1][1][1][1]
                  */
-                Var pos = Var.allocTmp(Loc.from(arr));
                 Var tmp = Var.allocTmp(Type.from(expType));
-                result.add(Def.of(pos, new Exp.BiExp(PADD, Var.from(arr), off)));
-                result.add(Def.of(tmp, new Exp.Load(pos)));
-                result.res = tmp;
+                Var pos = result.alloc(Loc.from(arr), PADD, Var.from(arr), off);
+                result.add(new Load(tmp, pos));
             } else {
                 /* int arr[2][3][4][5]
                  * int *c = arr[1][1]
@@ -140,16 +141,15 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
                 for (int i = exp.indices().size(); i < arr.type().dim(); ++i) {
                     tmp = Var.allocTmp(BaseType.Int.Type());
                     int curWidth = arr.type().widths().get(i);
-                    result.add(Def.of(tmp, new Exp.BiExp(OpExp.BiOp.MUL, off, Int.from(curWidth))));
+                    result.add(new BiExp(tmp, BiOp.MUL, off, Int.from(curWidth)));
                     off = tmp;
                 }
-                tmp = Var.allocTmp(Loc.from(arr));
-                result.add(Def.of(tmp, new Exp.BiExp(PADD, Var.from(arr), off)));
-                result.res = tmp;
+                result.alloc(Loc.from(arr), PADD, Var.from(arr), off);
             }
         } else {
             result = Result.empty();
-            result.res = Var.from(arr);
+            Var rhs = Var.from(arr);
+            result.alloc(rhs.type(), rhs);
         }
         return result;
     }
@@ -157,10 +157,10 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     @Override
     public Result visit(BinExp exp) {
         Result result = transform(exp.getLhs());
-        var lhsResVar = result.res;
+        var lhsResVar = result.res();
         result.merge(transform(exp.getRhs()));
-        var rhsResVar = result.res;
-        result.alloc(Type.from(exp.type()), new Exp.BiExp(exp.getOp(), lhsResVar, rhsResVar));
+        var rhsResVar = result.res();
+        result.alloc(Type.from(exp.type()), exp.getOp(), lhsResVar, rhsResVar);
         return result;
     }
 
@@ -170,20 +170,21 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
                 .map(Transform3AC::transform).toList();
         Result result = Result.empty();
 
-        Exp.Call call = new Exp.Call(
+        Call call = new Call(
+                Var.allocTmp(Type.from(exp.type())),
                 globalFun.get(exp.fun().name()),
                 argList.stream()
-                        .map(Result::getRes)
+                        .map(Result::res)
                         .collect(Collectors.toList()));
         argList.forEach(result::merge);
-        result.alloc(Type.from(exp.type()), call);
+        result.add(call);
         return result;
     }
 
     @Override
     public Result visit(UnExp exp) {
         Result result = transform(exp.getSub());
-        result.alloc(Type.from(exp.type()), new Exp.UnExp(exp.getOp(), result.res));
+        result.alloc(Type.from(exp.type()), exp.getOp(), result.res());
         return result;
     }
 
@@ -191,7 +192,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     public Result visit(ValExp exp) {
         if (exp.val() instanceof BaseVal baseVal) {
             Result result = Result.empty();
-            result.alloc(Type.from(exp.type()), new Exp.UnExp(OpExp.UnOp.NONE, baseVal));
+            result.alloc(Type.from(exp.type()), baseVal);
             return result;
         }
         throw new AssertionError("TODO");
@@ -203,12 +204,11 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Result result = Result.empty();
         VarDecl varDecl = exp.var();
 
+        Var tmp = Var.allocTmp(Type.from(exp.type()));
         if (varDecl.isGlobal()) {
-            Var tmp = Var.allocTmp(Type.from(exp.type()));
-            result.add(Def.of(tmp, new Exp.Load(Var.from(varDecl))));
-            result.res = tmp;
+            result.add(new Load(tmp, Var.from(varDecl)));
         } else {
-            result.alloc(Type.from(exp.type()), new Exp.UnExp(OpExp.UnOp.NONE, Var.from(varDecl)));
+            result.add(Def.of(tmp, Var.from(varDecl)));
         }
         return result;
     }
@@ -216,17 +216,16 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     private Result transform(ArrType type, List<org.jjppp.ast.exp.Exp> indices) {
         Result result = Result.empty();
         for (int i = 0; i < indices.size(); ++i) {
-            var last = result.res;
+            var last = result.res();
             var e = indices.get(i);
             int width = type.widths().get(i);
             Result ith = transform(e);
             result.merge(ith);
             if (i != 0) {
                 var def1 = result.alloc(BaseType.Int.Type(),
-                        new Exp.BiExp(OpExp.BiOp.MUL, last, Int.from(width)));
-                var def2 = result.alloc(BaseType.Int.Type(),
-                        new Exp.BiExp(OpExp.BiOp.ADD, def1.var(), ith.res));
-                result.res = def2.var();
+                        BiOp.MUL, last, Int.from(width));
+                result.alloc(BaseType.Int.Type(),
+                        BiOp.ADD, def1, ith.res());
             }
         }
         return result;
@@ -235,7 +234,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     @Override
     public Result visit(Assign stmt) {
         Result result = transform(stmt.rhs());
-        Var rhs = result.res;
+        Var rhs = result.res();
         if (stmt.lhs() instanceof VarExp varExp) {
             VarDecl varDecl = varExp.var();
             Var lhs = Var.from(varExp.var());
@@ -244,7 +243,6 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
                     throw new AssertionError("");
                 }
                 result.add(Def.of(lhs, rhs));
-                result.res = lhs;
             } else {
                 if (lhs.type() instanceof Loc) {
                     result.add(new Store(lhs, rhs));
@@ -260,11 +258,10 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
              * store rhs    => *arr = rhs
              */
             result.merge(transform(arrAccExp.arr().type(), arrAccExp.indices()));
-            Var off = result.res;
+            Var off = result.res();
             Var tmp = Var.allocTmp(Loc.from(arrAccExp.arr()));
-            result.add(Def.of(tmp, new Exp.BiExp(PADD, Var.from(arrAccExp.arr()), off)));
+            result.add(new BiExp(tmp, PADD, Var.from(arrAccExp.arr()), off));
             result.add(new Store(tmp, rhs));
-            result.res = null;
             return result;
         }
         throw new AssertionError("should not reach here");
@@ -299,7 +296,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Result sTru = transform(stmt.sTru());
         Result result = Result.empty();
         result.merge(cond);
-        result.add(Br.of(cond.res, lTru, lFls));
+        result.add(Br.of(cond.res(), lTru, lFls));
         result.add(lTru);
         result.merge(sTru);
         result.add(lFls);
@@ -319,7 +316,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Result sFls = transform(stmt.sFls());
         Result result = Result.empty();
         result.merge(cond);
-        result.add(Br.of(cond.res, lTru, lFls));
+        result.add(Br.of(cond.res(), lTru, lFls));
         result.add(lTru);
         result.merge(sTru);
         result.add(Jmp.of(lEnd));
@@ -335,7 +332,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Result result = Result.empty();
         if (stmt.exp().isPresent()) {
             result = transform(stmt.exp().get());
-            result.add(Def.of(retVar, result.res));
+            result.add(Def.of(retVar, result.res()));
         }
         result.add(new Jmp(exit));
         return result;
@@ -369,7 +366,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
         result.add(lCond);
         result.merge(cond);
-        result.add(Br.of(cond.res, lTru, lFls));
+        result.add(Br.of(cond.res(), lTru, lFls));
         result.add(lTru);
         result.merge(body);
         result.add(Jmp.of(lCond));
@@ -381,12 +378,6 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     public static final class Result {
         private final List<Instr> block;
-        private Var res = null;
-
-        private Result(List<Instr> block, Var res) {
-            this.block = block;
-            this.res = res;
-        }
 
         private Result(List<Instr> block) {
             this.block = block;
@@ -396,30 +387,41 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             return new Result(block);
         }
 
-        public static Result of(Var res) {
-            return new Result(new ArrayList<>(), res);
-        }
-
         public static Result empty() {
             return new Result(new ArrayList<>());
         }
 
-        public Def alloc(Type type, Exp rhs) {
-            Var var = Var.allocTmp(type);
-            Def def = new Def(var, rhs);
-            block.add(def);
-            res = var;
-            return def;
+        public Var alloc(Type type, BiOp op, Ope lhs, Ope rhs) {
+            Var tmp = Var.allocTmp(type);
+            block.add(new BiExp(tmp, op, lhs, rhs));
+            return tmp;
+        }
+
+        public Var alloc(Type type, UnOp op, Ope sub) {
+            Var tmp = Var.allocTmp(type);
+            block.add(new org.jjppp.ir.instr.UnExp(tmp, op, sub));
+            return tmp;
+        }
+
+        public Var alloc(Type type, Ope rhs) {
+            Var tmp = Var.allocTmp(type);
+            block.add(new Def(tmp, rhs));
+            return tmp;
         }
 
         public void alloc(Type type, Var loc, Var off) {
-            Var pos = Var.allocTmp(loc.type());
-            block.add(Def.of(pos, new Exp.BiExp(PADD, loc, off)));
-            Exp.Load load = new Exp.Load(pos);
             Var var = Var.allocTmp(type);
-            Def def = new Def(var, load);
-            block.add(def);
-            res = var;
+            Var pos = Var.allocTmp(loc.type());
+            block.add(new BiExp(pos, PADD, loc, off));
+            Load load = new Load(var, pos);
+            block.add(load);
+        }
+
+        public Var res() {
+            if (block.isEmpty()) {
+                return null;
+            }
+            return block.get(block.size() - 1).var();
         }
 
         public void add(Instr instr) {
@@ -428,11 +430,6 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
         public void merge(Result rhs) {
             block.addAll(rhs.block);
-            res = rhs.res;
-        }
-
-        public Var getRes() {
-            return res;
         }
     }
 }

@@ -1,14 +1,16 @@
 package org.jjppp.ir;
 
+import org.jjppp.ir.instr.Alloc;
+
 import java.util.List;
 
-public record IRCode(List<Fun> funList, List<Def> gDefList) {
+public record IRCode(List<Fun> funList, List<Alloc> gAllocList) {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        for (Def def : gDefList()) {
-            builder.append(def).append("\n");
+        for (Alloc alloc : gAllocList()) {
+            builder.append(alloc).append("\n");
         }
 
         for (Fun fun : funList()) {
@@ -21,7 +23,7 @@ public record IRCode(List<Fun> funList, List<Def> gDefList) {
         funList.add(fun);
     }
 
-    public void add(Def def) {
-        gDefList.add(def);
+    public void add(Alloc alloc) {
+        gAllocList.add(alloc);
     }
 }
