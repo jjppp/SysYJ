@@ -45,6 +45,7 @@ public final class Block implements Iterable<Instr> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        builder.append("instr count: ").append(size()).append("\n");
         for (Instr instr : instrList) {
             builder.append(instr).append("\\n");
         }
@@ -53,6 +54,10 @@ public final class Block implements Iterable<Instr> {
 
     public boolean isEmpty() {
         return instrList.isEmpty();
+    }
+
+    public int size() {
+        return instrList.size();
     }
 
     @Override

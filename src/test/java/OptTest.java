@@ -9,9 +9,8 @@ import org.jjppp.tools.transform.Transform3AC;
 import org.junit.jupiter.api.Test;
 
 public final class OptTest {
-    @Test
-    void testLVN() {
-        Program program = ParserTest.fromFile("simple/maxflow.sy");
+    private void run(String filepath) {
+        Program program = ParserTest.fromFile(filepath);
         IRCode code = Transform3AC.transform(program);
         for (var fun : code.funList()) {
             CFG cfg = CFGBuilder.buildFrom(fun);
@@ -25,5 +24,15 @@ public final class OptTest {
             dce.doDCE(cfg);
             cfg.toFolder("/home/jjppp/tmp/cfg/opt-");
         }
+    }
+
+    @Test
+    void testMaxflow() {
+        run("simple/maxflow.sy");
+    }
+
+    @Test
+    void testMatrix() {
+        run("simple/matrix.sy");
     }
 }

@@ -1,10 +1,13 @@
 package org.jjppp.tools.optimize;
 
+import org.jjppp.ast.exp.OpExp;
 import org.jjppp.ir.Def;
 import org.jjppp.ir.Exp;
 import org.jjppp.ir.Instr;
+import org.jjppp.ir.Var;
 import org.jjppp.ir.cfg.Block;
 import org.jjppp.ir.mem.Alloc;
+import org.jjppp.ir.mem.Store;
 
 import static org.jjppp.tools.optimize.ValTab.Val;
 
@@ -49,6 +52,12 @@ public final class LVN {
                         }
                     }
                 }
+            } else if (instr instanceof Store store) {
+                Val.UnVal val = (Val.UnVal) valTab.from(new Exp.UnExp(OpExp.UnOp.NONE, store.rhs()));
+                store.setRhs(valTab.belong(val.sub()));
+
+                int lhs = valTab.from(store.var());
+                store.setVar((Var) valTab.belong(lhs));
             }
             System.out.println(instr);
         }

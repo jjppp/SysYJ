@@ -9,13 +9,29 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Store implements Instr {
-    private final Var var;
-    private final Ope rhs;
+    private Var var;
+    private Ope rhs;
     private boolean dead = false;
 
     public Store(Var var, Ope rhs) {
         this.var = var;
         this.rhs = rhs;
+    }
+
+    public Var var() {
+        return var;
+    }
+
+    public void setRhs(Ope rhs) {
+        this.rhs = rhs;
+    }
+
+    public void setVar(Var var) {
+        this.var = var;
+    }
+
+    public Ope rhs() {
+        return rhs;
     }
 
     @Override

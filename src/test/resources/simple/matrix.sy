@@ -1,0 +1,20 @@
+const int N = 100;
+
+void mat_mul(int a[][N], int b[][N], int c[][N], int n) {
+    int i = 0;
+    while (i < n) {
+        int j = 0;
+        while (j < n) {
+            int k = 0;
+            while (k < n) {
+                c[i][j] = c[i][j] +  a[i][k] * b[k][j];
+                k = k + 1;
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+}
+
+int main() {
+}
