@@ -74,7 +74,13 @@ public final class LVN implements InstrVisitor<Instr> {
 
     @Override
     public Instr visit(Call call) {
-        return call;
+        return new Call(
+                call.var(),
+                call.fun(),
+                call.args().stream()
+                        .map(marker::from)
+                        .map(valTab::belong)
+                        .collect(Collectors.toList()));
     }
 
     @Override
