@@ -50,9 +50,9 @@ stmt
     | BREAK ';'                                         #breakStmt
     | exp ';'                                           #expStmt
     | ';'                                               #emptyStmt
-    | IF '(' cond ')' stmt                              #iftStmt
-    | IF '(' cond ')' sTru=stmt ELSE sFls=stmt          #ifteStmt
-    | WHILE '(' cond ')' stmt                           #whileStmt
+    | IF '(' exp  ')' stmt                              #iftStmt
+    | IF '(' exp  ')' sTru=stmt ELSE sFls=stmt          #ifteStmt
+    | WHILE '(' exp  ')' stmt                           #whileStmt
     | scope                                             #blockStmt
     ;
 
@@ -75,15 +75,10 @@ exp
     | lVal                                              #lValExp
     | number                                            #valExp
     | fun=ID '(' funcRParams? ')'                       #funExp
-    | op=(ADD | SUB) exp                                #unaryExp
-    ;
-
-cond
-    : op=NOT? exp                                       #rawCond
+    | op=(ADD | SUB | NOT) exp                          #unaryExp
     | lhs=exp op=(LE | LT | GE | GT) rhs=exp            #relCond
     | lhs=exp op=(EQ | NE) rhs=exp                      #eqCond
-    | op=NOT cond                                       #unaryCond
-    | lhs=cond op=(AND | OR) rhs=cond                   #binaryCond
+    | lhs=exp op=(AND | OR) rhs=exp                     #binaryCond
     ;
 
 /*****************************************************************/

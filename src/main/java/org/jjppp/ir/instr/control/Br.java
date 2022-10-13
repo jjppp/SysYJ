@@ -1,4 +1,4 @@
-package org.jjppp.ir.control;
+package org.jjppp.ir.instr.control;
 
 import org.jjppp.ir.Var;
 import org.jjppp.ir.instr.Instr;

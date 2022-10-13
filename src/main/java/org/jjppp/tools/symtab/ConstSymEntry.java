@@ -12,7 +12,7 @@ public final class ConstSymEntry implements Entry {
 
     private ConstSymEntry(Decl decl, Val defValExp) {
         this.decl = decl;
-        this.isGlobal = SymTab.isGlobal();
+        this.isGlobal = SymTab.getInstance().isGlobal();
         this.defVal = defValExp;
     }
 

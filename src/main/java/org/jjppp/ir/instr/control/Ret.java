@@ -1,5 +1,6 @@
-package org.jjppp.ir.control;
+package org.jjppp.ir.instr.control;
 
+import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
 import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.instr.InstrVisitor;
@@ -7,12 +8,7 @@ import org.jjppp.ir.instr.InstrVisitor;
 import java.util.Collections;
 import java.util.Set;
 
-public record Jmp(Label target) implements Instr {
-
-    public static Jmp of(Label target) {
-        return new Jmp(target);
-    }
-
+public record Ret(Ope retVal) implements Instr {
     @Override
     public boolean hasEffect() {
         return true;
@@ -30,11 +26,14 @@ public record Jmp(Label target) implements Instr {
 
     @Override
     public Set<Var> useSet() {
+        if (retVal instanceof Var var) {
+            return Set.of(var);
+        }
         return Collections.emptySet();
     }
 
     @Override
     public String toString() {
-        return "jmp " + target;
+        return "ret " + retVal;
     }
 }

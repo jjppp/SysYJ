@@ -19,7 +19,7 @@ public record VarExp(VarDecl var) implements LVal {
 
     @Override
     public Val constEval() {
-        return SymTab.getVal(var.name());
+        return SymTab.getInstance().getVal(var.name());
     }
 
     @Override

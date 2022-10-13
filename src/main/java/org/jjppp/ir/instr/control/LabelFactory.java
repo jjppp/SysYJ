@@ -1,4 +1,4 @@
-package org.jjppp.ir.control;
+package org.jjppp.ir.instr.control;
 
 public final class LabelFactory {
     private static int labelCount = -1;

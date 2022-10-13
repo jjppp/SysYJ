@@ -32,7 +32,7 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     public Exp visitLValExp(SysYParser.LValExpContext ctx) {
         LVal lVal = LValParser.parse(ctx.lVal());
         String name = lVal.getDecl().name();
-        if (SymTab.get(name) instanceof ConstSymEntry) {
+        if (SymTab.getInstance().get(name) instanceof ConstSymEntry) {
             return ValExp.of(lVal.constEval());
         }
         return lVal;
@@ -49,6 +49,7 @@ public final class ExpParser extends DefaultVisitor<Exp> {
                 switch (ctx.op.getText().charAt(0)) {
                     case '+' -> UnOp.POS;
                     case '-' -> UnOp.NEG;
+                    case '!' -> UnOp.NOT;
                     default -> throw new ParserException("unknown op");
                 },
                 parse(ctx.exp()));
@@ -92,7 +93,7 @@ public final class ExpParser extends DefaultVisitor<Exp> {
                 .orElse(List.of())
                 .stream().map(ExpParser::parse)
                 .collect(Collectors.toList());
-        Decl decl = SymTab.get(name).getDecl();
+        Decl decl = SymTab.getInstance().get(name).getDecl();
         if (decl instanceof FunDecl funDecl) {
             return FunExp.of(funDecl, args);
         }
@@ -112,5 +113,46 @@ public final class ExpParser extends DefaultVisitor<Exp> {
                 .map(ExpParser::parse)
                 .toList();
         return ArrValExp.of(exps, exps.stream().noneMatch(ArrValExp.class::isInstance));
+    }
+
+    @Override
+    public Exp visitEqCond(SysYParser.EqCondContext ctx) {
+        return BinExp.of(
+                switch (ctx.op.getText().charAt(0)) {
+                    case '=' -> BiOp.EQ;
+                    case '!' -> BiOp.NE;
+                    default -> throw new ParserException("unknown op");
+                },
+                ExpParser.parse(ctx.lhs),
+                ExpParser.parse(ctx.rhs));
+    }
+
+    @Override
+    public Exp visitRelCond(SysYParser.RelCondContext ctx) {
+        Exp lhs = ExpParser.parse(ctx.lhs);
+        Exp rhs = ExpParser.parse(ctx.rhs);
+
+        if (ctx.op.getText().equals("<")) {
+            return BinExp.of(BiOp.LT, lhs, rhs);
+        } else if (ctx.op.getText().equals("<=")) {
+            return BinExp.of(BiOp.LE, lhs, rhs);
+        } else if (ctx.op.getText().equals(">")) {
+            return BinExp.of(BiOp.GT, lhs, rhs);
+        } else if (ctx.op.getText().equals(">=")) {
+            return BinExp.of(BiOp.GE, lhs, rhs);
+        }
+        throw new ParserException("unknown op");
+    }
+
+    @Override
+    public Exp visitBinaryCond(SysYParser.BinaryCondContext ctx) {
+        return BinExp.of(
+                switch (ctx.op.getText().charAt(0)) {
+                    case '&' -> BiOp.AND;
+                    case '|' -> BiOp.OR;
+                    default -> throw new ParserException("unknown op");
+                },
+                ExpParser.parse(ctx.lhs),
+                ExpParser.parse(ctx.rhs));
     }
 }

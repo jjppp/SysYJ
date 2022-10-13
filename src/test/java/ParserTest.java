@@ -12,7 +12,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class ParserTest {
-    private final static String path = "/home/jjppp/Code/Project/SysYJ/src/test/resources/";
+    public final static String FOLDER_PATH = "/home/jjppp/Code/Project/SysYJ/src/test/resources/";
 
     private static Program fromCode(String code) {
         Parser parser = new Parser(CharStreams.fromString(code));
@@ -21,7 +21,7 @@ public final class ParserTest {
 
     public static Program fromFile(String filename) {
         try {
-            Parser parser = new Parser(CharStreams.fromFileName(path + filename));
+            Parser parser = new Parser(CharStreams.fromFileName(FOLDER_PATH + filename));
             return parser.parse();
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -46,10 +46,10 @@ public final class GlobalDefParser extends DefaultVisitor<List<Decl>> {
                         .map(Exp::constEval)
                         .map(BaseVal.class::cast)
                         .orElse(null);
-                SymTab.addConstVar(varDecl, defVal);
+                SymTab.getInstance().addConstVar(varDecl, defVal);
                 return Collections.emptyList();
             } else {
-                SymTab.addVar(varDecl, defValExp.orElse(ValExp.of(type.defVal())));
+                SymTab.getInstance().addVar(varDecl, defValExp.orElse(ValExp.of(type.defVal())));
                 return List.of(varDecl);
             }
         } else { // arr
@@ -64,10 +64,10 @@ public final class GlobalDefParser extends DefaultVisitor<List<Decl>> {
                         .map(Exp::constEval)
                         .map(ArrVal.class::cast)
                         .orElse(null);
-                SymTab.addConstArr(arrDecl, defVal);
+                SymTab.getInstance().addConstArr(arrDecl, defVal);
                 return Collections.emptyList();
             } else {
-                SymTab.addArr(arrDecl, (ArrValExp) (defValExp.orElse(null)));
+                SymTab.getInstance().addArr(arrDecl, (ArrValExp) (defValExp.orElse(null)));
                 return List.of(arrDecl);
             }
         }

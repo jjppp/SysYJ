@@ -1,9 +1,9 @@
 int main() {
     int a;
     a = 10;
-    if (+-!!!a) {
+//    if (+-!!!a) { TODO
         a = - - -1;
-    }
+//    }
     else {
         a = 0;
     }

@@ -1,15 +1,15 @@
 package org.jjppp.ir;
 
-import org.jjppp.ir.control.Label;
+import org.jjppp.ir.instr.control.Label;
 import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.type.BaseType;
 import org.jjppp.ir.type.Type;
 
 import java.util.List;
 
-public record Fun(String name, BaseType retType, List<Type> argTypes, List<Instr> body) {
-    public static Fun of(String name, BaseType retType, List<Type> argTypes, List<Instr> body) {
-        return new Fun(name, retType, argTypes, body);
+public record Fun(String name, BaseType retType, List<Type> argTypes, List<Var> args, List<Instr> body) {
+    public static Fun of(String name, BaseType retType, List<Type> argTypes, List<Var> args, List<Instr> body) {
+        return new Fun(name, retType, argTypes, args, body);
     }
 
     @Override

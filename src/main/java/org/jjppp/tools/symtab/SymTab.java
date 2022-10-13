@@ -7,54 +7,78 @@ import org.jjppp.ast.exp.ArrValExp;
 import org.jjppp.ast.exp.Exp;
 import org.jjppp.ast.exp.FunExp;
 import org.jjppp.ast.stmt.Assign;
-import org.jjppp.ast.stmt.ExpStmt;
+import org.jjppp.ast.stmt.Return;
 import org.jjppp.ast.stmt.Scope;
 import org.jjppp.immutable.ImmutableStack;
 import org.jjppp.runtime.ArrVal;
 import org.jjppp.runtime.BaseVal;
 import org.jjppp.runtime.Val;
 import org.jjppp.tools.parse.ParserException;
+import org.jjppp.type.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class SymTab {
-    private static final List<Assign> initBlock = new ArrayList<>();
-    private static ImmutableStack<Map<String, Entry>> mapStack = ImmutableStack.empty();
-    private static Map<String, Entry> top = new HashMap<>();
+    private final static Set<FunDecl> LIB_FUNCTIONS = Stream.of(
+            FunDecl.of("getint", FunType.of(IntType.ofNonConst(), Collections.emptyList()), null, null),
+            FunDecl.of("getch", FunType.of(IntType.ofNonConst(), Collections.emptyList()), null, null),
+            FunDecl.of("getfloat", FunType.of(FloatType.ofNonConst(), Collections.emptyList()), null, null),
+            FunDecl.of("getarray", FunType.of(IntType.ofNonConst(), List.of(ArrType.of(IntType.ofNonConst(), List.of(Integer.MAX_VALUE)))), null, null),
+            FunDecl.of("getfarray", FunType.of(IntType.ofNonConst(), List.of(ArrType.of(FloatType.ofNonConst(), List.of(Integer.MAX_VALUE)))), null, null),
+            FunDecl.of("putint", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst())), null, null),
+            FunDecl.of("putch", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst())), null, null),
+            FunDecl.of("putfloat", FunType.of(VoidType.getInstance(), List.of(FloatType.ofNonConst())), null, null),
+            FunDecl.of("putarray", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst(), ArrType.of(IntType.ofNonConst(), List.of(Integer.MAX_VALUE)))), null, null),
+            FunDecl.of("putfarray", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst(), ArrType.of(FloatType.ofNonConst(), List.of(Integer.MAX_VALUE)))), null, null)
+    ).collect(Collectors.toSet());
+    private static SymTab INSTANCE = new SymTab();
+    private final List<Assign> initBlock = new ArrayList<>();
+    private ImmutableStack<Map<String, Entry>> mapStack = ImmutableStack.empty();
+    private Map<String, Entry> top = new HashMap<>();
 
-    public static void init() {
-        initBlock.clear();
-        mapStack = ImmutableStack.empty();
-        top.clear();
+    private SymTab() {
+        LIB_FUNCTIONS.forEach(
+                funDecl -> top.put(funDecl.name(), SymEntry.from(funDecl, true))
+        );
     }
 
-    public static void push() {
+    public static SymTab getInstance() {
+        return INSTANCE;
+    }
+
+    public static void init() {
+        INSTANCE = new SymTab();
+    }
+
+    public void push() {
         mapStack = mapStack.push(top);
         top = new HashMap<>();
     }
 
-    public static void pop() {
+    public void pop() {
         top = mapStack.top();
         mapStack = mapStack.pop();
     }
 
-    public static Scope getInitBlock() {
+    public Scope getInitBlock() {
         Scope scope = Scope.empty();
         initBlock.forEach(scope::add);
         FunDecl main = (FunDecl) get("main").getDecl();
-        scope.add(ExpStmt.of(FunExp.of(main, Collections.emptyList())));
+        scope.add(Return.of(FunExp.of(main, Collections.emptyList())));
         return scope;
     }
 
-    public static void addFun(FunDecl funDecl) {
+    public void addFun(FunDecl funDecl) {
         top.put(funDecl.name(), SymEntry.from(funDecl));
     }
 
-    public static void addConstVar(VarDecl varDecl, BaseVal defVal) {
+    public void addConstVar(VarDecl varDecl, BaseVal defVal) {
         top.put(varDecl.name(), ConstSymEntry.from(varDecl, defVal));
     }
 
-    public static void addVar(VarDecl varDecl, Exp defValExp) {
+    public void addVar(VarDecl varDecl, Exp defValExp) {
         if (isGlobal()) {
             if (defValExp != null) {
                 initBlock.add(Assign.of(varDecl, defValExp));
@@ -63,11 +87,11 @@ public final class SymTab {
         top.put(varDecl.name(), SymEntry.from(varDecl));
     }
 
-    public static void addConstArr(ArrDecl arrDecl, ArrVal defVal) {
+    public void addConstArr(ArrDecl arrDecl, ArrVal defVal) {
         top.put(arrDecl.name(), ConstSymEntry.from(arrDecl, defVal));
     }
 
-    public static void addArr(ArrDecl arrDecl, ArrValExp defValExp) {
+    public void addArr(ArrDecl arrDecl, ArrValExp defValExp) {
         if (isGlobal()) {
             if (defValExp != null) {
                 initBlock.addAll(Assign.of(arrDecl, defValExp));
@@ -76,7 +100,7 @@ public final class SymTab {
         top.put(arrDecl.name(), SymEntry.from(arrDecl));
     }
 
-    public static Entry get(String symbol) {
+    public Entry get(String symbol) {
         if (top.get(symbol) != null) {
             return top.get(symbol);
         }
@@ -89,14 +113,14 @@ public final class SymTab {
         throw new ParserException("undefined symbol " + symbol);
     }
 
-    public static Val getVal(String symbol) {
+    public Val getVal(String symbol) {
         if (get(symbol) instanceof ConstSymEntry constSymEntry) {
             return constSymEntry.defVal().orElseThrow(() -> new RuntimeException("const symbol has no defVal"));
         }
         throw new ParserException("symbol " + symbol + " is not const");
     }
 
-    public static boolean isGlobal() {
+    public boolean isGlobal() {
         return mapStack.isEmpty();
     }
 }

@@ -198,16 +198,6 @@ public class DefaultVisitor<T> implements SysYVisitor<T> {
     }
 
     @Override
-    public T visitRawCond(SysYParser.RawCondContext ctx) {
-        return visitDefault();
-    }
-
-    @Override
-    public T visitUnaryCond(SysYParser.UnaryCondContext ctx) {
-        return visitDefault();
-    }
-
-    @Override
     public T visitRelCond(SysYParser.RelCondContext ctx) {
         return visitDefault();
     }

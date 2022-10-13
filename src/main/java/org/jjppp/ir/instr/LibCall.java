@@ -3,14 +3,14 @@ package org.jjppp.ir.instr;
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public record Load(Var var, Ope loc) implements Instr {
+public record LibCall(Var var, LibFun libFun, List<Ope> args) implements Instr {
     @Override
     public boolean hasEffect() {
-        return false;
+        return true;
     }
 
     @Override
@@ -20,7 +20,7 @@ public record Load(Var var, Ope loc) implements Instr {
 
     @Override
     public Set<Var> useSet() {
-        return Stream.of(var, loc)
+        return args().stream()
                 .filter(Var.class::isInstance)
                 .map(Var.class::cast)
                 .collect(Collectors.toSet());
@@ -28,6 +28,6 @@ public record Load(Var var, Ope loc) implements Instr {
 
     @Override
     public String toString() {
-        return var + " = " + "*" + loc;
+        return var + " = call @" + libFun().name() + " " + args;
     }
 }

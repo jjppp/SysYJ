@@ -53,7 +53,7 @@ public final class Print implements ASTVisitor<String> {
         return items.stream()
                 .map(this::print)
                 .reduce((x, y) -> x + newline() + y)
-                .orElseThrow();
+                .orElse("");
     }
 
     private String printArrAccIdx(List<Exp> exps) {

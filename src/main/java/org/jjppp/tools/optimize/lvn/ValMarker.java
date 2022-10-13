@@ -3,6 +3,7 @@ package org.jjppp.tools.optimize.lvn;
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
 import org.jjppp.ir.instr.*;
+import org.jjppp.ir.instr.memory.Load;
 import org.jjppp.runtime.BaseVal;
 
 import static org.jjppp.tools.optimize.lvn.ValTab.Val;

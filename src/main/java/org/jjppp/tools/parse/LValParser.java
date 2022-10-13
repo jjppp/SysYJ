@@ -27,7 +27,7 @@ public final class LValParser extends DefaultVisitor<LVal> {
     @Override
     public LVal visitIdLVal(SysYParser.IdLValContext ctx) {
         String name = ctx.ID().getText();
-        Decl decl = SymTab.get(name).getDecl();
+        Decl decl = SymTab.getInstance().get(name).getDecl();
         if (decl instanceof VarDecl varDecl) {
             return VarExp.of(varDecl);
         } else if (decl instanceof ArrDecl arrDecl) {
@@ -42,7 +42,7 @@ public final class LValParser extends DefaultVisitor<LVal> {
         List<Exp> indices = ctx.exp().stream()
                 .map(ExpParser::parse)
                 .collect(Collectors.toList());
-        Decl decl = SymTab.get(name).getDecl();
+        Decl decl = SymTab.getInstance().get(name).getDecl();
         if (decl instanceof ArrDecl arrDecl) {
             return ArrAccExp.of(arrDecl, indices);
         }

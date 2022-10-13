@@ -3,6 +3,9 @@ package org.jjppp.ir.instr;
 import org.jjppp.ast.decl.ArrDecl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ir.Var;
+import org.jjppp.ir.instr.memory.Alloc;
+import org.jjppp.ir.instr.memory.GAlloc;
+import org.jjppp.ir.instr.memory.LAlloc;
 
 import java.util.Set;
 

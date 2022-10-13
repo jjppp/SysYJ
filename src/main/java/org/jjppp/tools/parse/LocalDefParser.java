@@ -44,11 +44,11 @@ public final class LocalDefParser extends DefaultVisitor<List<Decl>> {
                         .map(BaseVal.class::cast)
                         .orElse(null);
                 VarDecl varDecl = VarDecl.of(name, type, null);
-                SymTab.addConstVar(varDecl, defVal);
+                SymTab.getInstance().addConstVar(varDecl, defVal);
                 return Collections.emptyList();
             } else {
                 VarDecl varDecl = VarDecl.of(name, type, defValExp);
-                SymTab.addVar(varDecl, null);
+                SymTab.getInstance().addVar(varDecl, null);
                 return List.of(varDecl);
             }
         } else { // arr
@@ -63,11 +63,11 @@ public final class LocalDefParser extends DefaultVisitor<List<Decl>> {
                         .map(Exp::constEval)
                         .map(ArrVal.class::cast)
                         .orElse(null);
-                SymTab.addConstArr(arrDecl, defVal);
+                SymTab.getInstance().addConstArr(arrDecl, defVal);
                 return Collections.emptyList();
             } else {
                 if (defValExp == null) {
-                    SymTab.addArr(arrDecl, null);
+                    SymTab.getInstance().addArr(arrDecl, null);
                     return List.of(arrDecl);
                 }
                 throw new AssertionError("TODO");

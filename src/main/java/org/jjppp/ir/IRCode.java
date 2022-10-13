@@ -1,6 +1,6 @@
 package org.jjppp.ir;
 
-import org.jjppp.ir.instr.Alloc;
+import org.jjppp.ir.instr.memory.Alloc;
 
 import java.util.List;
 

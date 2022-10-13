@@ -75,14 +75,14 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
     @Override
     public Stmt visitIftStmt(SysYParser.IftStmtContext ctx) {
         return If.of(
-                CondParser.parse(ctx.cond()),
+                ExpParser.parse(ctx.exp()),
                 StmtParser.parse(ctx.stmt()));
     }
 
     @Override
     public Stmt visitIfteStmt(SysYParser.IfteStmtContext ctx) {
         return Ife.of(
-                CondParser.parse(ctx.cond()),
+                ExpParser.parse(ctx.exp()),
                 StmtParser.parse(ctx.sTru),
                 StmtParser.parse(ctx.sFls));
     }
@@ -90,7 +90,7 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
     @Override
     public Stmt visitWhileStmt(SysYParser.WhileStmtContext ctx) {
         return While.of(
-                CondParser.parse(ctx.cond()),
+                ExpParser.parse(ctx.exp()),
                 StmtParser.parse(ctx.stmt()));
     }
 

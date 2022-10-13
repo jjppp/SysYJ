@@ -26,7 +26,7 @@ public record ArrAccExp(ArrDecl arr, List<Exp> indices) implements LVal {
         List<Integer> valIndices = indices.stream()
                 .map(Exp::constEval)
                 .map(Val::toInt).toList();
-        Val val = SymTab.getVal(arr.name());
+        Val val = SymTab.getInstance().getVal(arr.name());
         for (int i = 0; i < arr.type().dim(); ++i) {
             int index = valIndices.get(i);
             val = ((ArrVal) val).exps().get(index);

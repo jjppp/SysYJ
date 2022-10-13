@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public record Call(Var var, Fun fun, List<Ope> args) implements Instr {
     @Override
     public boolean hasEffect() {
-        return false;
+        return true;
     }
 
     @Override

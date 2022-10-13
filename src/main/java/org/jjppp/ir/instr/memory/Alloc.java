@@ -1,6 +1,7 @@
-package org.jjppp.ir.instr;
+package org.jjppp.ir.instr.memory;
 
 import org.jjppp.ir.Var;
+import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.type.BaseType;
 
 import java.util.Collections;
@@ -15,6 +16,14 @@ public abstract class Alloc implements Instr {
         this.var = var;
         this.baseType = baseType;
         this.length = length;
+    }
+
+    public BaseType baseType() {
+        return baseType;
+    }
+
+    public int length() {
+        return length;
     }
 
     @Override

@@ -1,9 +1,13 @@
 package org.jjppp.ir.instr;
 
-import org.jjppp.ir.control.Br;
-import org.jjppp.ir.control.Jmp;
-import org.jjppp.ir.control.Label;
-import org.jjppp.ir.control.Ret;
+import org.jjppp.ir.instr.control.Br;
+import org.jjppp.ir.instr.control.Jmp;
+import org.jjppp.ir.instr.control.Label;
+import org.jjppp.ir.instr.control.Ret;
+import org.jjppp.ir.instr.memory.GAlloc;
+import org.jjppp.ir.instr.memory.LAlloc;
+import org.jjppp.ir.instr.memory.Load;
+import org.jjppp.ir.instr.memory.Store;
 
 public interface InstrVisitor<R> {
     default R visitDefault(Instr ignore) {
@@ -56,5 +60,9 @@ public interface InstrVisitor<R> {
 
     default R visit(Jmp jmp) {
         return visitDefault(jmp);
+    }
+
+    default R visit(LibCall call) {
+        return visitDefault(call);
     }
 }

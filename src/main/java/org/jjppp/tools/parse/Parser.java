@@ -9,7 +9,7 @@ import org.jjppp.parser.SysYLexer;
 import org.jjppp.parser.SysYParser;
 import org.jjppp.tools.symtab.SymTab;
 import org.jjppp.type.FunType;
-import org.jjppp.type.VoidType;
+import org.jjppp.type.IntType;
 
 import java.util.Collections;
 
@@ -29,8 +29,8 @@ public final class Parser {
         SysYParser parser = new SysYParser(tokens);
         var ps = new ProgramParser();
         Program program = ps.visitCompUnit(parser.compUnit());
-        Scope body = SymTab.getInitBlock();
-        FunType funType = FunType.from(VoidType.getInstance(), Collections.emptyList());
+        Scope body = SymTab.getInstance().getInitBlock();
+        FunType funType = FunType.from(IntType.ofNonConst(), Collections.emptyList());
         FunDecl initFun = FunDecl.of("_init", funType, Collections.emptyList(), body);
         program.funList().add(initFun);
         return program;

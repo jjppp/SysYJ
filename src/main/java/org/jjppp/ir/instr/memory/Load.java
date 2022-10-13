@@ -1,17 +1,18 @@
-package org.jjppp.ir.control;
+package org.jjppp.ir.instr.memory;
 
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
 import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.instr.InstrVisitor;
 
-import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public record Ret(Ope retVal) implements Instr {
+public record Load(Var var, Ope loc) implements Instr {
     @Override
     public boolean hasEffect() {
-        return true;
+        return false;
     }
 
     @Override
@@ -20,20 +21,15 @@ public record Ret(Ope retVal) implements Instr {
     }
 
     @Override
-    public Var var() {
-        return null;
-    }
-
-    @Override
     public Set<Var> useSet() {
-        if (retVal instanceof Var var) {
-            return Set.of(var);
-        }
-        return Collections.emptySet();
+        return Stream.of(var, loc)
+                .filter(Var.class::isInstance)
+                .map(Var.class::cast)
+                .collect(Collectors.toSet());
     }
 
     @Override
     public String toString() {
-        return "ret " + retVal;
+        return var + " = " + "*" + loc;
     }
 }

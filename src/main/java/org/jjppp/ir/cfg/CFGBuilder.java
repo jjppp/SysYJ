@@ -2,9 +2,9 @@ package org.jjppp.ir.cfg;
 
 import org.jjppp.ir.Fun;
 import org.jjppp.ir.cfg.CFG.Node;
-import org.jjppp.ir.control.Br;
-import org.jjppp.ir.control.Jmp;
-import org.jjppp.ir.control.Label;
+import org.jjppp.ir.instr.control.Br;
+import org.jjppp.ir.instr.control.Jmp;
+import org.jjppp.ir.instr.control.Label;
 import org.jjppp.ir.instr.Instr;
 
 import java.util.ArrayList;

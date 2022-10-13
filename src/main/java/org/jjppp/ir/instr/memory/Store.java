@@ -1,13 +1,15 @@
-package org.jjppp.ir.control;
+package org.jjppp.ir.instr.memory;
 
+import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
 import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.instr.InstrVisitor;
 
-import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public record Label(String name, int id) implements Instr {
+public record Store(Var var, Ope rhs) implements Instr {
     @Override
     public boolean hasEffect() {
         return true;
@@ -19,17 +21,15 @@ public record Label(String name, int id) implements Instr {
     }
 
     @Override
-    public Var var() {
-        return null;
-    }
-
-    @Override
     public Set<Var> useSet() {
-        return Collections.emptySet();
+        return Stream.of(rhs, var)
+                .filter(Var.class::isInstance)
+                .map(Var.class::cast)
+                .collect(Collectors.toSet());
     }
 
     @Override
     public String toString() {
-        return "." + name + id + ":";
+        return "*" + var + " = " + rhs;
     }
 }

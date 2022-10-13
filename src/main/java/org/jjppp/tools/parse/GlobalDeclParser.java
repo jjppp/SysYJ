@@ -51,20 +51,20 @@ public final class GlobalDeclParser extends DefaultVisitor<List<Decl>> {
                         .collect(Collectors.toList());
         BaseType retType = TypeParser.parse(ctx.funcType());
         FunDecl funDecl = FunDecl.of(name, FunType.from(retType, params), params, null);
-        SymTab.addFun(funDecl);
+        SymTab.getInstance().addFun(funDecl);
 
-        SymTab.push();
+        SymTab.getInstance().push();
         {
             params.forEach(decl -> {
                 if (decl instanceof ArrDecl arrDecl) {
-                    SymTab.addArr(arrDecl, null);
+                    SymTab.getInstance().addArr(arrDecl, null);
                 } else if (decl instanceof VarDecl varDecl) {
-                    SymTab.addVar(varDecl, null);
+                    SymTab.getInstance().addVar(varDecl, null);
                 }
             });
             funDecl.setBody(StmtParser.parseSCope(ctx.scope()));
         }
-        SymTab.pop();
+        SymTab.getInstance().pop();
         return Collections.singletonList(funDecl);
     }
 }

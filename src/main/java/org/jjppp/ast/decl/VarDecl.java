@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public record VarDecl(String name, BaseType type, Optional<Exp> defValExp, boolean isGlobal) implements Decl {
     public static VarDecl of(String name, BaseType type, Exp defValExp) {
-        return new VarDecl(name, type, Optional.ofNullable(defValExp), SymTab.isGlobal());
+        return new VarDecl(name, type, Optional.ofNullable(defValExp), SymTab.getInstance().isGlobal());
     }
 
     public static VarDecl of(String name, BaseType type, Exp defValExp, boolean isGlobal) {

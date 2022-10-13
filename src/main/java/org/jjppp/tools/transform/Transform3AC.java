@@ -16,8 +16,11 @@ import org.jjppp.ir.Fun;
 import org.jjppp.ir.IRCode;
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
-import org.jjppp.ir.control.*;
 import org.jjppp.ir.instr.*;
+import org.jjppp.ir.instr.control.*;
+import org.jjppp.ir.instr.memory.LAlloc;
+import org.jjppp.ir.instr.memory.Load;
+import org.jjppp.ir.instr.memory.Store;
 import org.jjppp.ir.type.BaseType;
 import org.jjppp.ir.type.Loc;
 import org.jjppp.ir.type.Type;
@@ -52,6 +55,16 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
                     funType.argTypes().stream()
                             .map(Type::from)
                             .collect(Collectors.toList()),
+                    funDecl.getParams().stream()
+                            .map(x -> {
+                                if (x instanceof VarDecl varDecl) {
+                                    return Var.from(varDecl);
+                                } else if (x instanceof ArrDecl arrDecl) {
+                                    return Var.from(arrDecl);
+                                } else {
+                                    throw new AssertionError("TODO");
+                                }
+                            }).collect(Collectors.toList()),
                     new ArrayList<>()));
         }
 
@@ -166,13 +179,29 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         List<Result> argList = exp.args().stream()
                 .map(Transform3AC::transform).toList();
         Result result = Result.empty();
+        FunDecl fun = exp.fun();
 
-        Call call = new Call(
-                Var.allocTmp(Type.from(exp.type())),
-                globalFun.get(exp.fun().name()),
-                argList.stream()
-                        .map(Result::res)
-                        .collect(Collectors.toList()));
+        Var lhs = Var.allocTmp(Type.from(exp.type()));
+        Instr call;
+
+        if (fun.getBody() == null) {
+            // lib functions
+            call = new LibCall(
+                    lhs,
+                    LibFun.LIB_FUNCTIONS.stream()
+                            .filter(x -> fun.name().equalsIgnoreCase(x.name()))
+                            .findFirst().orElseThrow(),
+                    argList.stream()
+                            .map(Result::res)
+                            .collect(Collectors.toList()));
+        } else {
+            call = new Call(
+                    lhs,
+                    globalFun.get(fun.name()),
+                    argList.stream()
+                            .map(Result::res)
+                            .collect(Collectors.toList()));
+        }
         argList.forEach(result::merge);
         result.add(call);
         return result;

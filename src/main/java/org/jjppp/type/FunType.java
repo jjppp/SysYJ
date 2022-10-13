@@ -15,6 +15,10 @@ public record FunType(BaseType retType, List<Type> argTypes) implements Type {
                         .collect(Collectors.toList()));
     }
 
+    public static FunType of(BaseType retType, List<Type> argTypes) {
+        return new FunType(retType, argTypes);
+    }
+
     @Override
     public String toString() {
         return argTypes + " -> " + retType;

@@ -1,38 +1,27 @@
 package org.jjppp.tools.symtab;
 
 import org.jjppp.ast.decl.Decl;
-import org.jjppp.ast.decl.FunDecl;
 
 public final class SymEntry implements Entry {
     private final Decl decl;
     private final boolean isGlobal;
-    private int addr;
-    private int size;
 
-    private SymEntry(int addr, Decl decl) {
-        this.addr = addr;
+    private SymEntry(Decl decl) {
         this.decl = decl;
-        this.isGlobal = SymTab.isGlobal();
+        this.isGlobal = SymTab.getInstance().isGlobal();
     }
 
-    static SymEntry from(FunDecl funDecl) {
-        return new SymEntry(-1, funDecl);
+    public SymEntry(Decl decl, boolean isGlobal) {
+        this.decl = decl;
+        this.isGlobal = isGlobal;
     }
 
     static SymEntry from(Decl decl) {
-        return new SymEntry(-1, decl);
+        return new SymEntry(decl);
     }
 
-    public int getSize() {
-        return size;
-    }
-
-    public int getAddr() {
-        return addr;
-    }
-
-    public void setAddr(int addr) {
-        this.addr = addr;
+    static SymEntry from(Decl decl, boolean isGlobal) {
+        return new SymEntry(decl, isGlobal);
     }
 
     @Override
