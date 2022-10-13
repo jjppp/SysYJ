@@ -4,18 +4,33 @@ import org.jjppp.runtime.BaseVal;
 
 import java.util.List;
 
-public record ArrType(BaseType type, int dim, List<Integer> widths, boolean isConst) implements Type {
-    public static ArrType of(BaseType type, List<Integer> widths) {
-        return new ArrType(type, widths.size(), widths, type.isConst());
+public record ArrType(Type subType, int dim, int length, boolean isConst) implements Type {
+    public static ArrType of(Type elemType, int length) {
+        if (elemType instanceof ArrType arrType) {
+            return new ArrType(arrType, arrType.dim() + 1, length, arrType.isConst());
+        }
+        return new ArrType(elemType, 1, length, elemType.isConst());
     }
 
-    public int length() {
-        return widths.stream().reduce(1, (x, y) -> x * y);
+    public static ArrType of(BaseType baseType, List<Integer> widths) {
+        ArrType result = ArrType.of(baseType, widths.get(widths.size() - 1));
+        for (int i = widths.size() - 2; i >= 0; --i) {
+            result = ArrType.of(result, widths.get(i));
+        }
+        return result;
     }
 
     @Override
     public int size() {
-        return length() * type().size();
+        return length() * subType().size();
+    }
+
+    public int totalLength() {
+        if (subType() instanceof ArrType arrType) {
+            return length() * arrType.totalLength();
+        } else {
+            return length();
+        }
     }
 
     @Override
@@ -25,11 +40,20 @@ public record ArrType(BaseType type, int dim, List<Integer> widths, boolean isCo
 
     @Override
     public BaseVal defVal() {
-        return type.defVal();
+        return subType.defVal();
+    }
+
+    public BaseType elemType() {
+        if (subType() instanceof ArrType arrType) {
+            return arrType.elemType();
+        } else if (subType() instanceof BaseType baseType) {
+            return baseType;
+        }
+        throw new AssertionError("TODO");
     }
 
     @Override
     public String toString() {
-        return type + " " + widths;
+        return "arr [" + length() + " x " + subType() + "]";
     }
 }

@@ -99,10 +99,6 @@ public final class CFG {
 
     public void removeBlock(Block block) {
         Node node = blockNodeMap.get(block);
-        var tmp = edgeFrom.keySet().toArray();
-        System.out.println(tmp[1].equals(block));
-        System.out.println(tmp[0].equals(block));
-        System.out.println(tmp[2].equals(block));
         blockNodeMap.remove(block);
         edgeFrom.remove(node);
         for (var pred : node.getPred()) {

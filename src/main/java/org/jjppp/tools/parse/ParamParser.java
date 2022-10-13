@@ -5,6 +5,7 @@ import org.jjppp.ast.decl.Decl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.Exp;
 import org.jjppp.parser.SysYParser;
+import org.jjppp.runtime.Int;
 import org.jjppp.runtime.Val;
 import org.jjppp.type.ArrType;
 import org.jjppp.type.BaseType;
@@ -48,7 +49,8 @@ public final class ParamParser extends DefaultVisitor<List<Decl>> {
         List<Integer> widths = ctx.exp().stream()
                 .map(ExpParser::parse)
                 .map(Exp::constEval)
-                .map(Val::toInt).collect(Collectors.toList());
+                .map(Val::toInt)
+                .map(Int::value).collect(Collectors.toList());
         widths.add(0, Integer.MAX_VALUE);
         return List.of(ArrDecl.of(name, ArrType.of(bType, widths), false));
     }

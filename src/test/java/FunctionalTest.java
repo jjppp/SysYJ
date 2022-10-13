@@ -26,8 +26,9 @@ public final class FunctionalTest {
                 .filter(x -> !skipFiles.contains(x))
                 .collect(Collectors.toCollection(TreeSet::new));
         for (var file : sortedSet) {
-            System.out.println(file);
-            Main.main(ParserTest.FOLDER_PATH + "official/functional/" + file);
+            System.out.print(file + ": ");
+            Main.main(ParserTest.FOLDER_PATH + "official/functional/" + file,
+                    ParserTest.FOLDER_PATH + "official/functional/" + file.substring(0, file.length() - 2) + "in");
         }
     }
 }

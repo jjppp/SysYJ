@@ -7,7 +7,7 @@ import java.util.function.BinaryOperator;
 public enum BiOp implements BinaryOperator<Val>, Op {
     ADD, SUB, MUL, DIV, MOD,
     FADD, FSUB, FMUL, FDIV,
-    PADD, PSUB, PMUL,
+    PADD,
 
     LE, LT, GE, GT, NE, EQ,
     AND, OR;

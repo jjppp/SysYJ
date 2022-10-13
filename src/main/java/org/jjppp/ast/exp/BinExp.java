@@ -69,7 +69,7 @@ public final class BinExp extends Binary<Exp> implements OpExp {
             type = switch (getOp()) {
                 case ADD, SUB, MUL, DIV, MOD,
                         FADD, FSUB, FMUL, FDIV,
-                        PADD, PSUB, PMUL -> lhsType;
+                        PADD -> lhsType;
                 case EQ, GE, NE, LE, GT, LT, AND, OR -> IntType.ofNonConst();
             };
         }

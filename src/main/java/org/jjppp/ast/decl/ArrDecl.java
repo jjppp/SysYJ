@@ -3,26 +3,18 @@ package org.jjppp.ast.decl;
 import org.jjppp.ast.ASTVisitor;
 import org.jjppp.type.ArrType;
 
-import java.util.List;
+public record ArrDecl(String name, ArrType type, boolean isGlobal, int id) implements Decl {
+    private static int ARRDECL_COUNT = 0;
 
-public record ArrDecl(String name, ArrType type, boolean isGlobal) implements Decl {
     public static ArrDecl of(String name, ArrType type, boolean isGlobal) {
 //        throw new UnsupportedOperationException("array not supported");
-        return new ArrDecl(name, type, isGlobal);
-    }
-
-    private String printWidths(List<Integer> widths) {
-        return widths.stream()
-                .map(Object::toString)
-                .reduce((x, y) -> x + "][" + y)
-                .orElse("");
+        ARRDECL_COUNT += 1;
+        return new ArrDecl(name, type, isGlobal, ARRDECL_COUNT);
     }
 
     @Override
     public String toString() {
-        return type().type()
-                + " " + name()
-                + "[" + printWidths(type().widths()) + "]";
+        return "arr [" + type().length() + " x " + type().subType() + "]";
     }
 
     @Override

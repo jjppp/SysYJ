@@ -9,6 +9,7 @@ import org.jjppp.ast.exp.ValExp;
 import org.jjppp.parser.SysYParser;
 import org.jjppp.runtime.ArrVal;
 import org.jjppp.runtime.BaseVal;
+import org.jjppp.runtime.Int;
 import org.jjppp.runtime.Val;
 import org.jjppp.tools.symtab.SymTab;
 import org.jjppp.type.ArrType;
@@ -57,6 +58,7 @@ public final class GlobalDefParser extends DefaultVisitor<List<Decl>> {
                     .map(ExpParser::parse)
                     .map(Exp::constEval)
                     .map(Val::toInt)
+                    .map(Int::value)
                     .collect(Collectors.toList());
             ArrDecl arrDecl = ArrDecl.of(name, ArrType.of(type, widths), true);
             if (arrDecl.isConst()) {

@@ -24,7 +24,7 @@ public final class GAlloc extends Alloc {
             throw new AssertionError("global");
         }
         ArrType arrType = arrDecl.type();
-        return new GAlloc(var, BaseType.from(arrType.type()), arrType.length());
+        return new GAlloc(var, BaseType.from(arrType.elemType()), arrType.totalLength());
     }
 
     @Override

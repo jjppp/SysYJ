@@ -8,7 +8,7 @@ public record Loc(BaseType baseType) implements Type {
     }
 
     public static Loc from(ArrDecl arrDecl) {
-        return new Loc(BaseType.from(arrDecl.type().type()));
+        return new Loc(BaseType.from(arrDecl.type().elemType()));
     }
 
     @Override

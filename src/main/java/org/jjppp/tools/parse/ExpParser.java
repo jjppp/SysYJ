@@ -112,7 +112,7 @@ public final class ExpParser extends DefaultVisitor<Exp> {
         List<Exp> exps = ctx.initVal().stream()
                 .map(ExpParser::parse)
                 .toList();
-        return ArrValExp.of(exps, exps.stream().noneMatch(ArrValExp.class::isInstance));
+        return ArrValExp.of(exps);
     }
 
     @Override

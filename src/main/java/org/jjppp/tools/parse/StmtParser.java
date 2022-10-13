@@ -4,6 +4,7 @@ import org.jjppp.ast.exp.ValExp;
 import org.jjppp.ast.stmt.*;
 import org.jjppp.parser.SysYParser;
 import org.jjppp.runtime.Val;
+import org.jjppp.tools.symtab.SymTab;
 
 import java.util.Optional;
 
@@ -96,6 +97,9 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
 
     @Override
     public Scope visitBlockStmt(SysYParser.BlockStmtContext ctx) {
-        return parseSCope(ctx.scope());
+        SymTab.getInstance().push();
+        Scope scope = parseSCope(ctx.scope());
+        SymTab.getInstance().pop();
+        return scope;
     }
 }

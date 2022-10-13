@@ -24,7 +24,7 @@ public final class LAlloc extends Alloc {
             throw new AssertionError("local");
         }
         ArrType arrType = arrDecl.type();
-        return new LAlloc(var, BaseType.from(arrType.type()), arrType.length());
+        return new LAlloc(var, BaseType.from(arrType.elemType()), arrType.totalLength());
     }
 
     @Override

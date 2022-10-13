@@ -22,8 +22,13 @@ public record Float(java.lang.Float value) implements BaseVal {
     }
 
     @Override
-    public int toInt() {
-        return (int) value.floatValue();
+    public Int toInt() {
+        return Int.from(value.intValue());
+    }
+
+    @Override
+    public Float toFloat() {
+        return this;
     }
 
     @Override

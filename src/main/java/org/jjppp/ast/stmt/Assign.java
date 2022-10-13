@@ -4,9 +4,11 @@ import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.decl.ArrDecl;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.*;
+import org.jjppp.type.ArrType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 public record Assign(LVal lhs, Exp rhs) implements Stmt {
     public static Assign of(LVal lhs, Exp rhs) {
@@ -17,15 +19,17 @@ public record Assign(LVal lhs, Exp rhs) implements Stmt {
         return new Assign(VarExp.of(var), rhs);
     }
 
-    private static List<Assign> ofArrRec(ArrDecl arr, List<Exp> indices, ArrValExp rhs) {
+    private static List<Assign> ofArrRec(ArrDecl arr, ArrType arrType, List<Exp> indices, Queue<Exp> rhs) {
         List<Assign> result = new ArrayList<>();
-        for (int i = 0; i < rhs.exps().size(); ++i) {
+        for (int i = 0; i < arrType.length(); ++i) {
             indices.add(ValExp.of(i));
-            if (rhs.isLinear()) {
-                ArrAccExp arrAccExp = ArrAccExp.of(arr, indices);
-                result.add(Assign.of(arrAccExp, rhs.exps().get(i)));
-            } else {
-                result.addAll(ofArrRec(arr, indices, (ArrValExp) rhs.exps().get(i)));
+            if (rhs.peek() != null) {
+                if (arrType.dim() == 1) {
+                    ArrAccExp arrAccExp = ArrAccExp.of(arr, indices);
+                    result.add(Assign.of(arrAccExp, rhs.poll()));
+                } else {
+                    result.addAll(ofArrRec(arr, (ArrType) arrType.subType(), indices, rhs));
+                }
             }
             indices.remove(indices.size() - 1);
         }
@@ -33,7 +37,7 @@ public record Assign(LVal lhs, Exp rhs) implements Stmt {
     }
 
     public static List<Assign> of(ArrDecl arr, ArrValExp rhs) {
-        return ofArrRec(arr, new ArrayList<>(), rhs);
+        return ofArrRec(arr, arr.type(), new ArrayList<>(), rhs.toLinear(arr.type()));
     }
 
     @Override

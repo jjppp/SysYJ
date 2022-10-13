@@ -19,16 +19,28 @@ import org.jjppp.runtime.Float;
 import org.jjppp.runtime.Int;
 import org.jjppp.runtime.Val;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.IntStream;
 
 public final class Interpreter implements InstrVisitor<Integer> {
-    private final Map<Var, Object> valMap = new HashMap<>();
+    private final List<Map<Var, Object>> valMap = new ArrayList<>();
     private final Stack<Map<Label, Integer>> mapStack = new Stack<>();
     private final IRCode code;
+    private byte[] bytes;
+    private int curr = 0;
 
-    public Interpreter(IRCode code) {
+    public Interpreter(IRCode code, File file) {
+        valMap.add(new HashMap<>());
         this.code = code;
+        try (InputStream stream = new FileInputStream(file)) {
+            bytes = stream.readAllBytes();
+        } catch (IOException e) {
+            bytes = null;
+        }
         code.gAllocList().forEach(this::exec);
     }
 
@@ -40,11 +52,40 @@ public final class Interpreter implements InstrVisitor<Integer> {
         return instr.accept(this);
     }
 
+    private int nextCh() {
+        if (curr == bytes.length) {
+            return -1;
+        }
+        return bytes[curr++];
+    }
+
+    private int nextInt() {
+        int ch = nextCh();
+        int x = 0, sign = 1;
+        if (!(ch >= 48 && ch <= 57)) {
+            if (ch == '-') {
+                sign = -1;
+            }
+            ch = nextCh();
+        }
+        while (ch >= 48 && ch <= 57) {
+            x = x * 10 + ch - 48;
+            ch = nextCh();
+        }
+        curr--;
+        return x * sign;
+    }
+
     private Object valOf(Ope ope) {
         if (ope instanceof BaseVal baseVal) {
-            return baseVal;
+            return Objects.requireNonNull(baseVal);
         } else if (ope instanceof Var var) {
-            return valMap.get(var);
+            for (Map<Var, Object> map : valMap) {
+                if (map.containsKey(var)) {
+                    return map.get(var);
+                }
+            }
+            throw new RuntimeException(ope + ope.getClass().toString());
         }
         throw new RuntimeException("");
     }
@@ -52,6 +93,7 @@ public final class Interpreter implements InstrVisitor<Integer> {
     private Object run(Fun fun, Call call) {
         Map<Label, Integer> labelMap = new HashMap<>();
         mapStack.add(labelMap);
+        valMap.add(0, new HashMap<>());
         List<Instr> body = fun.body();
         List<Var> args = fun.args();
         for (int i = 0; i < body.size(); ++i) {
@@ -61,20 +103,19 @@ public final class Interpreter implements InstrVisitor<Integer> {
         }
 
         IntStream.range(0, args.size())
-                .forEach(i -> valMap.put(args.get(i), valOf(call.args().get(i))));
+                .forEach(i -> valMap.get(0).put(args.get(i), valOf(call.args().get(i))));
         Object retVal;
         int pc = 0;
 
         while (true) {
             Instr instr = body.get(pc);
-            System.out.println(instr);
             if (instr instanceof Ret ret) {
                 retVal = ret.retVal();
                 if (retVal instanceof Var var) {
-                    retVal = valMap.get(var);
+                    retVal = valOf(var);
                 }
                 mapStack.pop();
-                args.forEach(valMap::remove);
+                valMap.remove(0);
                 return Optional.ofNullable(retVal).orElseThrow();
             } else {
                 int res = exec(instr);
@@ -100,9 +141,9 @@ public final class Interpreter implements InstrVisitor<Integer> {
     public Integer visit(GAlloc alloc) {
         Var var = alloc.var();
         if (alloc.baseType() instanceof BaseType.Int) {
-            valMap.put(var, new Ptr(alloc.length()));
+            valMap.get(0).put(var, new Ptr(alloc.length(), Int.from(0)));
         } else if (alloc.baseType() instanceof BaseType.Float) {
-            valMap.put(var, new Ptr(alloc.length()));
+            valMap.get(0).put(var, new Ptr(alloc.length(), Float.from(0)));
         } else {
             throw new RuntimeException("");
         }
@@ -113,9 +154,9 @@ public final class Interpreter implements InstrVisitor<Integer> {
     public Integer visit(LAlloc alloc) {
         Var var = alloc.var();
         if (alloc.baseType() instanceof BaseType.Int) {
-            valMap.put(var, new Ptr(alloc.length()));
+            valMap.get(0).put(var, new Ptr(alloc.length(), Int.from(0)));
         } else if (alloc.baseType() instanceof BaseType.Float) {
-            valMap.put(var, new Ptr(alloc.length()));
+            valMap.get(0).put(var, new Ptr(alloc.length(), Float.from(0)));
         } else {
             throw new RuntimeException("");
         }
@@ -126,48 +167,88 @@ public final class Interpreter implements InstrVisitor<Integer> {
     public Integer visit(BiExp exp) {
         Val lhs = (Val) valOf(exp.lhs());
         Val rhs = (Val) valOf(exp.rhs());
-        valMap.put(exp.var(), switch (exp.op()) {
-            case FADD, ADD -> lhs.add(rhs);
-            case FSUB, SUB -> lhs.sub(rhs);
-            case FMUL, MUL -> lhs.mul(rhs);
-            case FDIV, DIV -> lhs.div(rhs);
+        var res = Objects.requireNonNull(switch (exp.op()) {
+            case ADD, PADD, FADD -> lhs.add(rhs);
+            case MUL, FMUL -> lhs.mul(rhs);
+            case DIV, FDIV -> lhs.div(rhs);
+            case SUB, FSUB -> lhs.sub(rhs);
+            case EQ -> lhs.eq(rhs);
+            case LE -> lhs.le(rhs);
+            case GE -> lhs.ge(rhs);
+            case LT -> lhs.lt(rhs);
+            case GT -> lhs.gt(rhs);
+            case NE -> lhs.ne(rhs);
+            case OR -> lhs.or(rhs);
+            case AND -> lhs.and(rhs);
             case MOD -> lhs.mod(rhs);
-            case EQ -> Int.from(
-                    lhs.equals(rhs) ? 1 : 0);
-            case NE -> Int.from(
-                    lhs.equals(rhs) ? 0 : 1);
-            default -> throw new AssertionError("TODO");
         });
+        valMap.get(0).put(exp.var(), res);
         return -1;
     }
 
     @Override
     public Integer visit(UnExp exp) {
         Val val = (Val) valOf(exp.sub());
-        valMap.put(exp.var(), switch (exp.op()) {
+        var res = switch (exp.op()) {
             case NEG -> val.neg();
-            case TOF -> Float.from(val.toInt());
+            case TOF -> val.toFloat();
             case POS -> val;
-            case TOI -> Int.from(val.toInt());
-            case NOT -> Int.from((((Int) val).value() != 0) ? 0 : 1);
-        });
+            case TOI -> val.toInt();
+            case NOT -> val.not();
+        };
+        valMap.get(0).put(exp.var(), res);
         return -1;
     }
 
     @Override
     public Integer visit(Call call) {
-        valMap.put(call.var(), run(call.fun(), call));
+        var retVal = run(call.fun(), call);
+        valMap.get(0).put(call.var(), retVal);
         return -1;
     }
 
     @Override
     public Integer visit(LibCall call) {
+        String name = call.libFun().name().toLowerCase();
+        switch (name) {
+            case "putint" -> {
+                var arg1 = valOf(call.args().get(0));
+                System.out.print(arg1);
+            }
+            case "putch" -> {
+                var arg1 = valOf(call.args().get(0));
+                System.out.print((char) ((Int) arg1).value().intValue());
+            }
+            case "getint" -> valMap.get(0).put(call.var(), Int.from(nextInt()));
+            case "getarray" -> {
+                Ptr arg1 = (Ptr) valOf(call.args().get(0));
+                int n = nextInt();
+                valMap.get(0).put(call.var(), Int.from(n));
+                for (int i = 0; i < n; ++i) {
+                    var tmp = Int.from(nextInt());
+                    arg1.add(Int.from(i)).write(tmp);
+                }
+            }
+            case "putarray" -> {
+                Int arg1 = (Int) valOf(call.args().get(0));
+                Ptr arg2 = (Ptr) valOf(call.args().get(1));
+                System.out.print(arg1 + ":");
+                for (int i = 0; i < arg1.value(); ++i) {
+                    System.out.print(arg2.add(Int.from(i)).read() + " ");
+                }
+            }
+            case "getch" -> {
+                Int tmp = Int.from(nextCh());
+                valMap.get(0).put(call.var(), tmp);
+            }
+            default -> throw new AssertionError("TODO");
+        }
         return -1;
     }
 
     @Override
     public Integer visit(Def def) {
-        valMap.put(def.var(), valOf(def.rhs()));
+        valMap.get(0).put(def.var(), valOf(def.rhs()));
         return -1;
     }
 
@@ -175,14 +256,14 @@ public final class Interpreter implements InstrVisitor<Integer> {
     public Integer visit(Load load) {
         Var var = load.var();
         Ptr ptr = (Ptr) valOf(load.loc());
-        valMap.put(var, ptr.read());
+        valMap.get(0).put(var, ptr.read());
         return -1;
     }
 
     @Override
     public Integer visit(Store store) {
         Ptr ptr = (Ptr) valOf(store.var());
-        ptr.write((Val) valOf(store.rhs()));
+        ptr.write((BaseVal) valOf(store.rhs()));
         return -1;
     }
 
@@ -193,7 +274,7 @@ public final class Interpreter implements InstrVisitor<Integer> {
 
     @Override
     public Integer visit(Br br) {
-        if (valMap.get(br.cond()) instanceof Int i) {
+        if (valMap.get(0).get(br.cond()) instanceof Int i) {
             if (i.value() == 0) {
                 return fromLabel(br.sFls());
             } else {
@@ -208,28 +289,60 @@ public final class Interpreter implements InstrVisitor<Integer> {
         return fromLabel(jmp.target());
     }
 
-    private final static class Ptr {
-        private final Val[] base;
-        private int offset;
+    private final static class Ptr implements Val {
+        private final Map<Integer, BaseVal> base;
+        private final int offset;
 
-        public Ptr(int length) {
-            base = new Val[length];
+        private Ptr(Map<Integer, BaseVal> base, int offset) {
+            this.base = base;
+            this.offset = offset;
+        }
+
+        public Ptr(int length, BaseVal val) {
+            base = new HashMap<>(length);
+            for (int i = 0; i < length; ++i) {
+                base.put(i, val);
+            }
             offset = 0;
         }
 
+        @Override
+        public String toString() {
+            return "base[" + offset + "]";
+        }
+
         public Val read() {
-            return base[offset];
+            return base.get(offset);
         }
 
-        public void write(Val val) {
-            base[offset] = val;
+        public void write(BaseVal val) {
+            base.put(offset, val);
         }
 
-        public void add(Val delta) {
+        @Override
+        public Ptr add(Val delta) {
             if (delta instanceof Int) {
-                offset += delta.toInt();
+                if (offset + delta.toInt().value() < 0) {
+                    throw new RuntimeException("");
+                }
+                return new Ptr(base, offset + delta.toInt().value());
             }
             throw new RuntimeException("");
+        }
+
+        @Override
+        public Int toInt() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Float toFloat() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int compareTo(Val val) {
+            return 0;
         }
     }
 }

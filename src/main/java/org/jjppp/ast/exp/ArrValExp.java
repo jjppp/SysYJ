@@ -3,14 +3,38 @@ package org.jjppp.ast.exp;
 import org.jjppp.ast.ASTVisitor;
 import org.jjppp.runtime.ArrVal;
 import org.jjppp.runtime.Val;
+import org.jjppp.type.ArrType;
 import org.jjppp.type.Type;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public record ArrValExp(List<Exp> exps, boolean isLinear) implements Exp {
-    public static ArrValExp of(List<Exp> exps, boolean isLinear) {
-        return new ArrValExp(exps, isLinear);
+public record ArrValExp(List<Exp> exps) implements Exp {
+    public static ArrValExp of(List<Exp> exps) {
+        return new ArrValExp(exps);
+    }
+
+    public Queue<Exp> toLinear(ArrType arrType) {
+        List<Exp> expList =
+                exps.stream().flatMap(x -> {
+                    if (x instanceof ArrValExp arrValExp) {
+                        if (arrType.subType() instanceof ArrType subArrType) {
+                            return arrValExp.toLinear(subArrType).stream();
+                        } else {
+                            throw new RuntimeException("");
+                        }
+                    } else return Stream.of(x);
+                }).toList();
+        return Stream.concat(
+                expList.stream(),
+                Collections.nCopies(
+                        arrType.totalLength() - expList.size(),
+                        (ValExp) null).stream()
+        ).collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override

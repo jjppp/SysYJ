@@ -7,7 +7,7 @@ public interface Type {
         if (type instanceof org.jjppp.type.BaseType baseType) {
             return BaseType.from(baseType);
         } else if (type instanceof ArrType arrType) {
-            return Loc.of(BaseType.from(arrType.type()));
+            return Loc.of(BaseType.from(arrType.elemType()));
         } else {
             throw new AssertionError("TODO");
         }

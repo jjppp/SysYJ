@@ -25,13 +25,13 @@ public final class SymTab {
             FunDecl.of("getint", FunType.of(IntType.ofNonConst(), Collections.emptyList()), null, null),
             FunDecl.of("getch", FunType.of(IntType.ofNonConst(), Collections.emptyList()), null, null),
             FunDecl.of("getfloat", FunType.of(FloatType.ofNonConst(), Collections.emptyList()), null, null),
-            FunDecl.of("getarray", FunType.of(IntType.ofNonConst(), List.of(ArrType.of(IntType.ofNonConst(), List.of(Integer.MAX_VALUE)))), null, null),
-            FunDecl.of("getfarray", FunType.of(IntType.ofNonConst(), List.of(ArrType.of(FloatType.ofNonConst(), List.of(Integer.MAX_VALUE)))), null, null),
+            FunDecl.of("getarray", FunType.of(IntType.ofNonConst(), List.of(ArrType.of(IntType.ofNonConst(), Integer.MAX_VALUE))), null, null),
+            FunDecl.of("getfarray", FunType.of(IntType.ofNonConst(), List.of(ArrType.of(FloatType.ofNonConst(), Integer.MAX_VALUE))), null, null),
             FunDecl.of("putint", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst())), null, null),
             FunDecl.of("putch", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst())), null, null),
             FunDecl.of("putfloat", FunType.of(VoidType.getInstance(), List.of(FloatType.ofNonConst())), null, null),
-            FunDecl.of("putarray", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst(), ArrType.of(IntType.ofNonConst(), List.of(Integer.MAX_VALUE)))), null, null),
-            FunDecl.of("putfarray", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst(), ArrType.of(FloatType.ofNonConst(), List.of(Integer.MAX_VALUE)))), null, null)
+            FunDecl.of("putarray", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst(), ArrType.of(IntType.ofNonConst(), Integer.MAX_VALUE))), null, null),
+            FunDecl.of("putfarray", FunType.of(VoidType.getInstance(), List.of(IntType.ofNonConst(), ArrType.of(FloatType.ofNonConst(), Integer.MAX_VALUE))), null, null)
     ).collect(Collectors.toSet());
     private static SymTab INSTANCE = new SymTab();
     private final List<Assign> initBlock = new ArrayList<>();

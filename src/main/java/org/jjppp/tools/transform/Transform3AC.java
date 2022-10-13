@@ -25,14 +25,16 @@ import org.jjppp.ir.type.BaseType;
 import org.jjppp.ir.type.Loc;
 import org.jjppp.ir.type.Type;
 import org.jjppp.runtime.BaseVal;
+import org.jjppp.runtime.Float;
 import org.jjppp.runtime.Int;
+import org.jjppp.runtime.Val;
 import org.jjppp.type.ArrType;
 import org.jjppp.type.FunType;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.jjppp.ast.exp.op.BiOp.PADD;
+import static org.jjppp.ast.exp.op.BiOp.*;
 
 public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     private final static Transform3AC INSTANCE = new Transform3AC();
@@ -83,6 +85,13 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             Result body = transform(funDecl.getBody());
             body.add(exit);
             body.add(new Ret(retVar));
+            if (retVar.type() instanceof BaseType.Void) {
+                fun.body().add(Def.of(retVar, Val.Void.getInstance()));
+            } else if (retVar.type() instanceof BaseType.Float) {
+                fun.body().add(Def.of(retVar, Float.from(0)));
+            } else if (retVar.type() instanceof BaseType.Int) {
+                fun.body().add(Def.of(retVar, Int.from(0)));
+            }
             fun.body().addAll(body.block);
             irCode.add(fun);
         }
@@ -133,27 +142,30 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         ArrDecl arr = exp.arr();
         Result result;
         if (exp.indices().size() != 0) {
+            org.jjppp.type.Type expType = exp.type();
+            while (exp.indices().size() < arr.type().dim()) {
+                exp.indices().add(ValExp.of(0));
+            }
+
             result = transform(arr.type(), exp.indices());
             Var off = result.res();
-            org.jjppp.type.Type expType = exp.type();
             if (expType instanceof org.jjppp.type.BaseType) {
                 /* int arr[2][3][4][5]
                  * int c = arr[1][1][1][1]
+                 * =>
+                 * load
                  */
-                Var tmp = Var.allocTmp(Type.from(expType));
                 Var pos = result.alloc(Loc.from(arr), PADD, Var.from(arr), off);
+                Var tmp = Var.allocTmp(Type.from(expType));
                 result.add(new Load(tmp, pos));
             } else {
                 /* int arr[2][3][4][5]
                  * int *c = arr[1][1]
+                 * =>
+                 * int *c = arr[1][1][0][0]
+                 * =>
+                 * def
                  */
-                Var tmp;
-                for (int i = exp.indices().size(); i < arr.type().dim(); ++i) {
-                    tmp = Var.allocTmp(BaseType.Int.Type());
-                    int curWidth = arr.type().widths().get(i);
-                    result.add(new BiExp(tmp, BiOp.MUL, off, Int.from(curWidth)));
-                    off = tmp;
-                }
                 result.alloc(Loc.from(arr), PADD, Var.from(arr), off);
             }
         } else {
@@ -166,11 +178,41 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     @Override
     public Result visit(BinExp exp) {
+        Var tmp = Var.allocTmp(Type.from(exp.type()));
+
         Result result = transform(exp.getLhs());
         var lhsResVar = result.res();
-        result.merge(transform(exp.getRhs()));
-        var rhsResVar = result.res();
-        result.alloc(Type.from(exp.type()), exp.getOp(), lhsResVar, rhsResVar);
+        if (exp.getOp().equals(AND)) {
+            Label lTru = LabelFactory.alloc("sc_tru");
+            Label lFls = LabelFactory.alloc("sc_fls");
+            Label lEnd = LabelFactory.alloc("sc_end");
+            result.add(Br.of(lhsResVar, lTru, lFls));
+            result.add(lTru);
+            result.merge(transform(exp.getRhs()));
+            var rhsResVar = result.res();
+            result.add(Jmp.of(lEnd));
+            result.add(lFls);
+            result.add(Def.of(rhsResVar, Int.from(0)));
+            result.add(lEnd);
+            result.add(new BiExp(tmp, AND, lhsResVar, rhsResVar));
+        } else if (exp.getOp().equals(OR)) {
+            Label lTru = LabelFactory.alloc("sc_tru");
+            Label lFls = LabelFactory.alloc("sc_fls");
+            Label lEnd = LabelFactory.alloc("sc_end");
+            result.add(Br.of(lhsResVar, lTru, lFls));
+            result.add(lFls);
+            result.merge(transform(exp.getRhs()));
+            var rhsResVar = result.res();
+            result.add(Jmp.of(lEnd));
+            result.add(lTru);
+            result.add(Def.of(rhsResVar, Int.from(1)));
+            result.add(lEnd);
+            result.add(new BiExp(tmp, OR, lhsResVar, rhsResVar));
+        } else {
+            result.merge(transform(exp.getRhs()));
+            var rhsResVar = result.res();
+            result.alloc(Type.from(exp.type()), exp.getOp(), lhsResVar, rhsResVar);
+        }
         return result;
     }
 
@@ -221,6 +263,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             result.alloc(Type.from(exp.type()), baseVal);
             return result;
         }
+        System.out.println(exp);
         throw new AssertionError("TODO");
     }
 
@@ -241,13 +284,15 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
 
     private Result transform(ArrType type, List<org.jjppp.ast.exp.Exp> indices) {
         Result result = Result.empty();
+        org.jjppp.type.Type curType = type;
         for (int i = 0; i < indices.size(); ++i) {
             var last = result.res();
             var e = indices.get(i);
-            int width = type.widths().get(i);
             Result ith = transform(e);
             result.merge(ith);
             if (i != 0) {
+                curType = ((ArrType) curType).subType();
+                int width = ((ArrType) curType).length();
                 var def1 = result.alloc(BaseType.Int.Type(),
                         BiOp.MUL, last, Int.from(width));
                 result.alloc(BaseType.Int.Type(),
@@ -283,10 +328,11 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
              * eval ptr     => arr + off
              * store rhs    => *arr = rhs
              */
-            result.merge(transform(arrAccExp.arr().type(), arrAccExp.indices()));
+            ArrDecl arrDecl = arrAccExp.arr();
+            result.merge(transform(arrDecl.type(), arrAccExp.indices()));
             Var off = result.res();
-            Var tmp = Var.allocTmp(Loc.from(arrAccExp.arr()));
-            result.add(new BiExp(tmp, PADD, Var.from(arrAccExp.arr()), off));
+            Var tmp = Var.allocTmp(Loc.from(arrDecl));
+            result.add(new BiExp(tmp, PADD, Var.from(arrDecl), off));
             result.add(new Store(tmp, rhs));
             return result;
         }
@@ -316,7 +362,6 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     public Result visit(If stmt) {
         Label lTru = LabelFactory.alloc("true");
         Label lFls = LabelFactory.alloc("false");
-        breakStack.add(lFls);
 
         Result cond = transform(stmt.cond());
         Result sTru = transform(stmt.sTru());
@@ -326,7 +371,6 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         result.add(lTru);
         result.merge(sTru);
         result.add(lFls);
-        breakStack.pop();
         return result;
     }
 
@@ -335,7 +379,6 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Label lTru = LabelFactory.alloc("true");
         Label lFls = LabelFactory.alloc("false");
         Label lEnd = LabelFactory.alloc("end");
-        breakStack.add(lEnd);
 
         Result cond = transform(stmt.cond());
         Result sTru = transform(stmt.sTru());
@@ -349,7 +392,6 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         result.add(lFls);
         result.merge(sFls);
         result.add(lEnd);
-        breakStack.pop();
         return result;
     }
 

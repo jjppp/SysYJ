@@ -1,7 +1,12 @@
 package org.jjppp.runtime;
 
+import org.jjppp.ir.type.BaseType;
+import org.jjppp.ir.type.Type;
+
 public interface Val extends Comparable<Val> {
-    int toInt();
+    Int toInt();
+
+    Float toFloat();
 
     default Val add(Val rhs) {
         throw new UnsupportedOperationException("");
@@ -23,11 +28,47 @@ public interface Val extends Comparable<Val> {
         throw new UnsupportedOperationException("");
     }
 
+    default Val le(Val rhs) {
+        throw new UnsupportedOperationException("");
+    }
+
+    default Val lt(Val rhs) {
+        throw new UnsupportedOperationException("");
+    }
+
+    default Val ge(Val rhs) {
+        throw new UnsupportedOperationException("");
+    }
+
+    default Val gt(Val rhs) {
+        throw new UnsupportedOperationException("");
+    }
+
+    default Val eq(Val rhs) {
+        throw new UnsupportedOperationException("");
+    }
+
+    default Val ne(Val rhs) {
+        throw new UnsupportedOperationException("");
+    }
+
+    default Val and(Val rhs) {
+        throw new UnsupportedOperationException("");
+    }
+
+    default Val or(Val rhs) {
+        throw new UnsupportedOperationException("");
+    }
+
     default Val neg() {
         throw new UnsupportedOperationException("");
     }
 
-    final class Void implements Val {
+    default Val not() {
+        throw new UnsupportedOperationException("");
+    }
+
+    final class Void implements BaseVal {
         private final static Void INSTANCE = new Void();
 
         private Void() {
@@ -38,8 +79,18 @@ public interface Val extends Comparable<Val> {
         }
 
         @Override
-        public int toInt() {
+        public Type type() {
+            return BaseType.Void.Type();
+        }
+
+        @Override
+        public Int toInt() {
             throw new UnsupportedOperationException("void toInt()");
+        }
+
+        @Override
+        public Float toFloat() {
+            throw new UnsupportedOperationException();
         }
 
         @Override

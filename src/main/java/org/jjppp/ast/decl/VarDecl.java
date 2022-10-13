@@ -7,13 +7,17 @@ import org.jjppp.type.BaseType;
 
 import java.util.Optional;
 
-public record VarDecl(String name, BaseType type, Optional<Exp> defValExp, boolean isGlobal) implements Decl {
+public record VarDecl(String name, BaseType type, Optional<Exp> defValExp, boolean isGlobal, int id) implements Decl {
+    private static int VARDECL_COUNT = 0;
+
     public static VarDecl of(String name, BaseType type, Exp defValExp) {
-        return new VarDecl(name, type, Optional.ofNullable(defValExp), SymTab.getInstance().isGlobal());
+        VARDECL_COUNT += 1;
+        return new VarDecl(name, type, Optional.ofNullable(defValExp), SymTab.getInstance().isGlobal(), VARDECL_COUNT);
     }
 
     public static VarDecl of(String name, BaseType type, Exp defValExp, boolean isGlobal) {
-        return new VarDecl(name, type, Optional.ofNullable(defValExp), isGlobal);
+        VARDECL_COUNT += 1;
+        return new VarDecl(name, type, Optional.ofNullable(defValExp), isGlobal, VARDECL_COUNT);
     }
 
     @Override

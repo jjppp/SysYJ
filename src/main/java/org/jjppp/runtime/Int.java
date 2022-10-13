@@ -34,8 +34,13 @@ public record Int(Integer value) implements BaseVal {
     }
 
     @Override
-    public int toInt() {
-        return value;
+    public Int toInt() {
+        return this;
+    }
+
+    @Override
+    public Float toFloat() {
+        return Float.from(value);
     }
 
     @Override
@@ -61,6 +66,59 @@ public record Int(Integer value) implements BaseVal {
     @Override
     public Val mod(Val rhs) {
         return Int.from(this.value % ((Int) rhs).value);
+    }
+
+    @Override
+    public Val le(Val rhs) {
+        return lt(rhs).or(eq(rhs));
+    }
+
+    @Override
+    public Val lt(Val rhs) {
+        if (value() < ((Int) rhs).value()) {
+            return Int.from(1);
+        } else {
+            return Int.from(0);
+        }
+    }
+
+    @Override
+    public Val ge(Val rhs) {
+        return gt(rhs).or(eq(rhs));
+    }
+
+    @Override
+    public Val gt(Val rhs) {
+        if (value() > ((Int) rhs).value()) {
+            return Int.from(1);
+        } else {
+            return Int.from(0);
+        }
+    }
+
+    @Override
+    public Val eq(Val rhs) {
+        return Int.from(value().equals(((Int) rhs).value()) ? 1 : 0);
+    }
+
+    @Override
+    public Val ne(Val rhs) {
+        return eq(rhs).not();
+    }
+
+    @Override
+    public Val and(Val rhs) {
+        return ne(Int.from(0)).mul(rhs.ne(Int.from(0)));
+    }
+
+    @Override
+    public Val or(Val rhs) {
+        return ne(Int.from(0)).add(rhs.ne(Int.from(0)));
+    }
+
+    @Override
+    public Val not() {
+        return eq(Int.from(0));
     }
 
     @Override

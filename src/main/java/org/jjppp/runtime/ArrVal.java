@@ -18,7 +18,12 @@ public record ArrVal(List<Val> exps) implements Val {
     }
 
     @Override
-    public int toInt() {
+    public Int toInt() {
         throw new UnsupportedOperationException("arr toInt");
+    }
+
+    @Override
+    public Float toFloat() {
+        throw new UnsupportedOperationException();
     }
 }
