@@ -33,13 +33,18 @@ public record ArrValExp(List<Exp> exps) implements Exp {
                 expList.stream(),
                 Collections.nCopies(
                         arrType.totalLength() - expList.size(),
-                        (ValExp) null).stream()
+                        ValExp.of(null)).stream()
         ).collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
     public <R> R accept(ASTVisitor<R> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean isConst() {
+        return exps.stream().allMatch(Exp::isConst);
     }
 
     @Override

@@ -33,7 +33,9 @@ public final class ExpParser extends DefaultVisitor<Exp> {
         LVal lVal = LValParser.parse(ctx.lVal());
         String name = lVal.getDecl().name();
         if (SymTab.getInstance().get(name) instanceof ConstSymEntry) {
-            return ValExp.of(lVal.constEval());
+            if (lVal.isConst()) {
+                return ValExp.of(lVal.constEval());
+            }
         }
         return lVal;
     }
@@ -45,14 +47,12 @@ public final class ExpParser extends DefaultVisitor<Exp> {
 
     @Override
     public Exp visitUnaryExp(SysYParser.UnaryExpContext ctx) {
-        return UnExp.of(
-                switch (ctx.op.getText().charAt(0)) {
-                    case '+' -> UnOp.POS;
-                    case '-' -> UnOp.NEG;
-                    case '!' -> UnOp.NOT;
-                    default -> throw new ParserException("unknown op");
-                },
-                parse(ctx.exp()));
+        Exp exp = parse(ctx.exp());
+        char ch = ctx.op.getText().charAt(0);
+        if (ch == '+') return UnExp.of(UnOp.POS, exp);
+        else if (ch == '-') return UnExp.of(UnOp.NEG, exp);
+        else if (ch == '!') return UnExp.of(UnOp.NOT, exp);
+        throw new ParserException("unknown op");
     }
 
     @Override
@@ -62,14 +62,12 @@ public final class ExpParser extends DefaultVisitor<Exp> {
 
     @Override
     public Exp visitAddExp(SysYParser.AddExpContext ctx) {
-        return BinExp.of(
-                switch (ctx.op.getText().charAt(0)) {
-                    case '+' -> BiOp.ADD;
-                    case '-' -> BiOp.SUB;
-                    default -> throw new ParserException("unknown op");
-                },
-                parse(ctx.lhs),
-                parse(ctx.rhs));
+        Exp lhs = parse(ctx.lhs);
+        Exp rhs = parse(ctx.rhs);
+        char ch = ctx.op.getText().charAt(0);
+        if (ch == '+') return BinExp.of(BiOp.ADD, lhs, rhs);
+        else if (ch == '-') return BinExp.of(BiOp.SUB, lhs, rhs);
+        throw new ParserException("unknown op");
     }
 
     @Override
@@ -145,14 +143,12 @@ public final class ExpParser extends DefaultVisitor<Exp> {
     }
 
     @Override
-    public Exp visitBinaryCond(SysYParser.BinaryCondContext ctx) {
-        return BinExp.of(
-                switch (ctx.op.getText().charAt(0)) {
-                    case '&' -> BiOp.AND;
-                    case '|' -> BiOp.OR;
-                    default -> throw new ParserException("unknown op");
-                },
-                ExpParser.parse(ctx.lhs),
-                ExpParser.parse(ctx.rhs));
+    public Exp visitAndCond(SysYParser.AndCondContext ctx) {
+        return BinExp.of(BiOp.AND, parse(ctx.lhs), parse(ctx.rhs));
+    }
+
+    @Override
+    public Exp visitOrCond(SysYParser.OrCondContext ctx) {
+        return BinExp.of(BiOp.OR, parse(ctx.lhs), parse(ctx.rhs));
     }
 }

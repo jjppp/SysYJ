@@ -69,16 +69,17 @@ number
     ;
 
 exp
-    : lhs=exp op=(MUL | DIV | MOD) rhs=exp              #mulExp
+    : op=(ADD | SUB | NOT) exp                          #unaryExp
+    | lhs=exp op=(MUL | DIV | MOD) rhs=exp              #mulExp
     | lhs=exp op=(ADD | SUB) rhs=exp                    #addExp
     | '(' exp ')'                                       #bracketExp
     | lVal                                              #lValExp
     | number                                            #valExp
     | fun=ID '(' funcRParams? ')'                       #funExp
-    | op=(ADD | SUB | NOT) exp                          #unaryExp
     | lhs=exp op=(LE | LT | GE | GT) rhs=exp            #relCond
     | lhs=exp op=(EQ | NE) rhs=exp                      #eqCond
-    | lhs=exp op=(AND | OR) rhs=exp                     #binaryCond
+    | lhs=exp AND rhs=exp                               #andCond
+    | lhs=exp OR  rhs=exp                               #orCond
     ;
 
 /*****************************************************************/

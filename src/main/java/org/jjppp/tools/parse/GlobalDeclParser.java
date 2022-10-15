@@ -57,7 +57,7 @@ public final class GlobalDeclParser extends DefaultVisitor<List<Decl>> {
         {
             params.forEach(decl -> {
                 if (decl instanceof ArrDecl arrDecl) {
-                    SymTab.getInstance().addArr(arrDecl, null);
+                    SymTab.getInstance().addArr(arrDecl);
                 } else if (decl instanceof VarDecl varDecl) {
                     SymTab.getInstance().addVar(varDecl, null);
                 }

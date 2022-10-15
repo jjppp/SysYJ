@@ -24,6 +24,11 @@ public record ArrAccExp(ArrDecl arr, List<Exp> indices) implements LVal {
     }
 
     @Override
+    public boolean isConst() {
+        return arr.isConst() && indices().stream().allMatch(Exp::isConst);
+    }
+
+    @Override
     public Val constEval() {
         List<Integer> valIndices = indices.stream()
                 .map(Exp::constEval)

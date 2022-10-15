@@ -7,7 +7,6 @@ import org.jjppp.ast.exp.ArrValExp;
 import org.jjppp.ast.exp.Exp;
 import org.jjppp.ast.stmt.Assign;
 import org.jjppp.parser.SysYParser;
-import org.jjppp.runtime.ArrVal;
 import org.jjppp.runtime.BaseVal;
 import org.jjppp.runtime.Int;
 import org.jjppp.runtime.Val;
@@ -58,23 +57,14 @@ public final class LocalDefParser extends DefaultVisitor<List<Item>> {
                     .map(Val::toInt)
                     .map(Int::value)
                     .collect(Collectors.toList());
-            ArrDecl arrDecl = ArrDecl.of(name, ArrType.of(type, widths), false);
-            if (arrDecl.isConst()) {
-                ArrVal defVal = Optional.ofNullable(defValExp)
-                        .map(Exp::constEval)
-                        .map(ArrVal.class::cast)
-                        .orElse(null);
-                SymTab.getInstance().addConstArr(arrDecl, defVal);
-                return Collections.emptyList();
+            ArrDecl arrDecl = ArrDecl.of(name, ArrType.of(type, widths), (ArrValExp) defValExp, false);
+            SymTab.getInstance().addArr(arrDecl);
+            if (type.isConst() || defValExp == null) {
+                return List.of(arrDecl);
             } else {
-                SymTab.getInstance().addArr(arrDecl, null);
-                if (defValExp == null) {
-                    return List.of(arrDecl);
-                } else {
-                    List<Item> result = new ArrayList<>(List.of(arrDecl));
-                    result.addAll(Assign.of(arrDecl, (ArrValExp) defValExp));
-                    return result;
-                }
+                List<Item> result = new ArrayList<>(List.of(arrDecl));
+                result.addAll(Assign.of(arrDecl));
+                return result;
             }
         }
     }

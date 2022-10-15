@@ -8,14 +8,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class CFG {
-    private final Fun fun;
+    private final Fun.Signature fun;
     private final Map<Block, Node> blockNodeMap = new HashMap<>();
     private final Map<Node, Map<Node, Edge>> edgeFrom = new HashMap<>();
     private Node entry = null;
     private Node exit = null;
 
-    public CFG(Fun fun) {
+    public CFG(Fun.Signature fun) {
         this.fun = fun;
+    }
+
+    public Fun.Signature fun() {
+        return fun;
     }
 
     @Override
@@ -113,8 +117,9 @@ public final class CFG {
         Objects.requireNonNull(to);
         Node fromNode = fromBlock(from);
         Node toNode = fromBlock(to);
-        edgeFrom.get(fromNode).put(toNode, new Edge(fromNode, toNode, type));
-        fromNode.addSucc(toNode);
+        Edge edge = new Edge(fromNode, toNode, type);
+        edgeFrom.get(fromNode).put(toNode, edge);
+        fromNode.addSucc(edge);
         toNode.addPred(fromNode);
     }
 
@@ -130,7 +135,9 @@ public final class CFG {
     public final class Node {
         private final Set<Node> succ = new HashSet<>();
         private final Set<Node> pred = new HashSet<>();
+        private final Set<Edge> outEdges = new HashSet<>();
         private Block block;
+        private boolean lead = true;
 
         public Node(Block block) {
             this.block = block;
@@ -152,8 +159,24 @@ public final class CFG {
             pred.remove(node);
         }
 
-        public void addSucc(Node succ) {
-            this.succ.add(succ);
+        public Set<Edge> outEdges() {
+            return outEdges;
+        }
+
+        public boolean isLead() {
+            return lead;
+        }
+
+        public void setLead(boolean isLead) {
+            this.lead = isLead;
+        }
+
+        public void addSucc(Edge edge) {
+            if (edge.type().equals(Edge.EDGE_TYPE.FALL_THROUGH)) {
+                edge.to().setLead(false);
+            }
+            this.succ.add(edge.to());
+            outEdges.add(edge);
         }
 
         public void addPred(Node pred) {

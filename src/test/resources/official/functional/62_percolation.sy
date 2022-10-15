@@ -17,7 +17,6 @@ int findfa(int a) {
   }
 }
 void mmerge(int a, int b) {
-    putint(a); putch(32); putint(b); putch(10);
   int m = findfa(a);
   int n = findfa(b);
   if (m != n) array[m] = n;

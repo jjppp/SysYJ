@@ -34,6 +34,11 @@ public record ValExp(Val val) implements Exp {
     }
 
     @Override
+    public boolean isConst() {
+        return true;
+    }
+
+    @Override
     public Val constEval() {
         return val;
     }

@@ -14,11 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public final class ParserTest {
     public final static String FOLDER_PATH = "/home/jjppp/Code/Project/SysYJ/src/test/resources/";
 
-    private static Program fromCode(String code) {
-        Parser parser = new Parser(CharStreams.fromString(code));
-        return parser.parse();
-    }
-
     public static Program fromFile(String filename) {
         try {
             Parser parser = new Parser(CharStreams.fromFileName(FOLDER_PATH + filename));
@@ -33,7 +28,8 @@ public final class ParserTest {
         Program program = fromFile(filename);
         Print print = new Print(program);
         System.out.println(print.prettyPrint());
-        System.out.println(Transform3AC.transform(program));
+        Transform3AC transformer = new Transform3AC();
+        System.out.println(transformer.transform(program));
     }
 
     @Test

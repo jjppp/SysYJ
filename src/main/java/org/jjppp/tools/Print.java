@@ -45,11 +45,14 @@ public final class Print implements ASTVisitor<String> {
     }
 
     public String prettyPrint() {
-
-        return program.funList().stream()
+        return program.globalDecls().stream()
+                .map(this::print)
+                .reduce((x, y) -> x + "\n" + y)
+                .orElse("")
+                + program.funList().stream()
                 .map(this::print)
                 .reduce((x, y) -> x + "\n\n" + y)
-                .orElseThrow();
+                .orElse("");
     }
 
     private String printItems(List<Item> items) {

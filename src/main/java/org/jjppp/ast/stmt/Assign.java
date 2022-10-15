@@ -25,8 +25,11 @@ public record Assign(LVal lhs, Exp rhs) implements Stmt {
             indices.add(ValExp.of(i));
             if (rhs.peek() != null) {
                 if (arrType.dim() == 1) {
-                    ArrAccExp arrAccExp = ArrAccExp.of(arr, indices);
-                    result.add(Assign.of(arrAccExp, rhs.poll()));
+                    Exp exp = rhs.poll();
+                    if (!(exp instanceof ValExp valExp && valExp.val() == null)) {
+                        ArrAccExp arrAccExp = ArrAccExp.of(arr, indices);
+                        result.add(Assign.of(arrAccExp, exp));
+                    }
                 } else {
                     result.addAll(ofArrRec(arr, (ArrType) arrType.subType(), indices, rhs));
                 }
@@ -36,8 +39,8 @@ public record Assign(LVal lhs, Exp rhs) implements Stmt {
         return result;
     }
 
-    public static List<Assign> of(ArrDecl arr, ArrValExp rhs) {
-        return ofArrRec(arr, arr.type(), new ArrayList<>(), rhs.toLinear(arr.type()));
+    public static List<Assign> of(ArrDecl arr) {
+        return ofArrRec(arr, arr.type(), new ArrayList<>(), arr.arrValExp().toLinear(arr.type()));
     }
 
     @Override

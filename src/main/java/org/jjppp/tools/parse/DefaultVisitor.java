@@ -203,7 +203,12 @@ public class DefaultVisitor<T> implements SysYVisitor<T> {
     }
 
     @Override
-    public T visitBinaryCond(SysYParser.BinaryCondContext ctx) {
+    public T visitOrCond(SysYParser.OrCondContext ctx) {
+        return visitDefault();
+    }
+
+    @Override
+    public T visitAndCond(SysYParser.AndCondContext ctx) {
         return visitDefault();
     }
 

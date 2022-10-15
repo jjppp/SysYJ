@@ -1,15 +1,21 @@
 package org.jjppp.ast.decl;
 
 import org.jjppp.ast.ASTVisitor;
+import org.jjppp.ast.exp.ArrValExp;
 import org.jjppp.type.ArrType;
 
-public record ArrDecl(String name, ArrType type, boolean isGlobal, int id) implements Decl {
+import java.util.ArrayList;
+
+public record ArrDecl(String name, ArrType type, ArrValExp arrValExp, boolean isGlobal, int id) implements Decl {
     private static int ARRDECL_COUNT = 0;
 
-    public static ArrDecl of(String name, ArrType type, boolean isGlobal) {
+    public static ArrDecl of(String name, ArrType type, ArrValExp arrValExp, boolean isGlobal) {
 //        throw new UnsupportedOperationException("array not supported");
         ARRDECL_COUNT += 1;
-        return new ArrDecl(name, type, isGlobal, ARRDECL_COUNT);
+        if (arrValExp == null) {
+            arrValExp = ArrValExp.of(new ArrayList<>());
+        }
+        return new ArrDecl(name, type, arrValExp, isGlobal, ARRDECL_COUNT);
     }
 
     @Override

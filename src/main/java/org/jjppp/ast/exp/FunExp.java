@@ -21,6 +21,11 @@ public record FunExp(FunDecl fun, List<Exp> args) implements Exp {
     }
 
     @Override
+    public boolean isConst() {
+        return false;
+    }
+
+    @Override
     public Val constEval() {
         throw new AssertionError("TODO");
     }

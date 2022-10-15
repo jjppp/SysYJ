@@ -79,6 +79,11 @@ public interface Val extends Comparable<Val> {
         }
 
         @Override
+        public String toString() {
+            return "void";
+        }
+
+        @Override
         public Type type() {
             return BaseType.Void.Type();
         }

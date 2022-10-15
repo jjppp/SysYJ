@@ -52,6 +52,11 @@ public final class BinExp extends Binary<Exp> implements OpExp {
     }
 
     @Override
+    public boolean isConst() {
+        return getLhs().isConst() && getRhs().isConst();
+    }
+
+    @Override
     public Val constEval() {
         return op.apply(getLhs().constEval(), getRhs().constEval());
     }
@@ -65,7 +70,6 @@ public final class BinExp extends Binary<Exp> implements OpExp {
     public Type type() {
         if (type == null) {
             Type lhsType = getLhs().type();
-            Type rhsType = getRhs().type();
             type = switch (getOp()) {
                 case ADD, SUB, MUL, DIV, MOD,
                         FADD, FSUB, FMUL, FDIV,

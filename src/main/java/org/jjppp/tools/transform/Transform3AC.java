@@ -37,17 +37,13 @@ import java.util.stream.Collectors;
 import static org.jjppp.ast.exp.op.BiOp.*;
 
 public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
-    private final static Transform3AC INSTANCE = new Transform3AC();
     private final static Map<String, Fun> globalFun = new HashMap<>();
     private static Var retVar;
     private static Label exit;
     private final Stack<Label> contStack = new Stack<>();
     private final Stack<Label> breakStack = new Stack<>();
 
-    private Transform3AC() {
-    }
-
-    public static IRCode transform(Program program) {
+    public IRCode transform(Program program) {
         for (FunDecl funDecl : program.funList()) {
             FunType funType = funDecl.type();
 
@@ -75,7 +71,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         for (int i = 0; i < program.funList().size(); ++i) {
             FunDecl funDecl = program.funList().get(i);
             Fun fun = globalFun.get(funDecl.name());
-            if (!fun.name().equals(funDecl.name())) {
+            if (!fun.signature().name().equals(funDecl.name())) {
                 throw new AssertionError("fun name not match");
             }
 
@@ -83,6 +79,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             retVar = Var.allocTmp(BaseType.from(funType.retType()));
             exit = LabelFactory.alloc("exit");
             Result body = transform(funDecl.getBody());
+            body.add(Jmp.of(exit));
             body.add(exit);
             body.add(new Ret(retVar));
             if (retVar.type() instanceof BaseType.Void) {
@@ -106,8 +103,8 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         return irCode;
     }
 
-    public static Result transform(ASTNode node) {
-        return node.accept(INSTANCE);
+    public Result transform(ASTNode node) {
+        return node.accept(this);
     }
 
     @Override
@@ -219,7 +216,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     @Override
     public Result visit(FunExp exp) {
         List<Result> argList = exp.args().stream()
-                .map(Transform3AC::transform).toList();
+                .map(this::transform).toList();
         Result result = Result.empty();
         FunDecl fun = exp.fun();
 
@@ -239,7 +236,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         } else {
             call = new Call(
                     lhs,
-                    globalFun.get(fun.name()),
+                    globalFun.get(fun.name()).signature(),
                     argList.stream()
                             .map(Result::res)
                             .collect(Collectors.toList()));
@@ -343,7 +340,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     public Result visit(Scope stmt) {
         Result result = Result.empty();
         stmt.items().stream()
-                .map(Transform3AC::transform)
+                .map(this::transform)
                 .forEach(result::merge);
         return result;
     }
@@ -402,7 +399,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             result = transform(stmt.exp().get());
             result.add(Def.of(retVar, result.res()));
         }
-        result.add(new Jmp(exit));
+        result.add(Jmp.of(exit));
         return result;
     }
 

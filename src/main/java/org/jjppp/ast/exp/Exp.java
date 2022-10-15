@@ -5,6 +5,8 @@ import org.jjppp.runtime.Val;
 import org.jjppp.type.Type;
 
 public interface Exp extends ASTNode {
+    boolean isConst();
+
     Val constEval();
 
     Type type();

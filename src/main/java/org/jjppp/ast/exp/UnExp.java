@@ -28,6 +28,11 @@ public class UnExp extends Unary<Exp> implements OpExp {
     }
 
     @Override
+    public boolean isConst() {
+        return getSub().isConst();
+    }
+
+    @Override
     public Val constEval() {
         return op.apply(getSub().constEval());
     }

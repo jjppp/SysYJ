@@ -9,7 +9,8 @@ public final class CFGTest {
     @Test
     void testMaxflow() {
         Program program = ParserTest.fromFile("simple/maxflow.sy");
-        IRCode code = Transform3AC.transform(program);
+        Transform3AC transformer = new Transform3AC();
+        IRCode code = transformer.transform(program);
         ParserTest.print("simple/maxflow.sy");
 
         for (Fun fun : code.funList()) {
@@ -25,7 +26,8 @@ public final class CFGTest {
     @Test
     void testAlloc() {
         Program program = ParserTest.fromFile("simple/alloc.sy");
-        IRCode code = Transform3AC.transform(program);
+        Transform3AC transformer = new Transform3AC();
+        IRCode code = transformer.transform(program);
         ParserTest.print("simple/alloc.sy");
 
         for (Fun fun : code.funList()) {

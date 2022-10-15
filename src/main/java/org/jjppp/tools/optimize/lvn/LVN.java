@@ -2,11 +2,11 @@ package org.jjppp.tools.optimize.lvn;
 
 import org.jjppp.ir.Var;
 import org.jjppp.ir.cfg.Block;
+import org.jjppp.ir.instr.*;
 import org.jjppp.ir.instr.control.Br;
 import org.jjppp.ir.instr.control.Jmp;
 import org.jjppp.ir.instr.control.Label;
 import org.jjppp.ir.instr.control.Ret;
-import org.jjppp.ir.instr.*;
 import org.jjppp.ir.instr.memory.GAlloc;
 import org.jjppp.ir.instr.memory.LAlloc;
 import org.jjppp.ir.instr.memory.Load;
@@ -131,5 +131,10 @@ public final class LVN implements InstrVisitor<Instr> {
     @Override
     public Instr visit(Jmp jmp) {
         return jmp;
+    }
+
+    @Override
+    public Instr visit(LibCall call) {
+        return call;
     }
 }

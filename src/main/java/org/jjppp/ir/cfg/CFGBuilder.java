@@ -2,10 +2,10 @@ package org.jjppp.ir.cfg;
 
 import org.jjppp.ir.Fun;
 import org.jjppp.ir.cfg.CFG.Node;
+import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.instr.control.Br;
 import org.jjppp.ir.instr.control.Jmp;
 import org.jjppp.ir.instr.control.Label;
-import org.jjppp.ir.instr.Instr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ public final class CFGBuilder {
     public CFGBuilder(Fun fun) {
         instrList = fun.body();
         labelBlockMap = new HashMap<>();
-        cfg = new CFG(fun);
+        cfg = new CFG(fun.signature());
     }
 
     private List<Block> grouping() {

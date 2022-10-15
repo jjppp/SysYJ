@@ -52,6 +52,6 @@ public final class ParamParser extends DefaultVisitor<List<Decl>> {
                 .map(Val::toInt)
                 .map(Int::value).collect(Collectors.toList());
         widths.add(0, Integer.MAX_VALUE);
-        return List.of(ArrDecl.of(name, ArrType.of(bType, widths), false));
+        return List.of(ArrDecl.of(name, ArrType.of(bType, widths), null, false));
     }
 }

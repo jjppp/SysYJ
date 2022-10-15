@@ -3,7 +3,6 @@ package org.jjppp.tools.symtab;
 import org.jjppp.ast.decl.ArrDecl;
 import org.jjppp.ast.decl.FunDecl;
 import org.jjppp.ast.decl.VarDecl;
-import org.jjppp.ast.exp.ArrValExp;
 import org.jjppp.ast.exp.Exp;
 import org.jjppp.ast.exp.FunExp;
 import org.jjppp.ast.stmt.Assign;
@@ -87,17 +86,23 @@ public final class SymTab {
         top.put(varDecl.name(), SymEntry.from(varDecl));
     }
 
-    public void addConstArr(ArrDecl arrDecl, ArrVal defVal) {
-        top.put(arrDecl.name(), ConstSymEntry.from(arrDecl, defVal));
-    }
-
-    public void addArr(ArrDecl arrDecl, ArrValExp defValExp) {
-        if (isGlobal()) {
-            if (defValExp != null) {
-                initBlock.addAll(Assign.of(arrDecl, defValExp));
+    public void addArr(ArrDecl arrDecl) {
+        if (arrDecl.isConst()) {
+            var defVal = ArrVal.of(arrDecl.arrValExp().toLinear(arrDecl.type())
+                    .stream()
+                    .map(Exp::constEval)
+                    .collect(Collectors.toList()));
+            if (isGlobal()) {
+                initBlock.addAll(Assign.of(arrDecl));
             }
+
+            top.put(arrDecl.name(), ConstSymEntry.from(arrDecl, defVal));
+        } else {
+            if (isGlobal()) {
+                initBlock.addAll(Assign.of(arrDecl));
+            }
+            top.put(arrDecl.name(), SymEntry.from(arrDecl));
         }
-        top.put(arrDecl.name(), SymEntry.from(arrDecl));
     }
 
     public Entry get(String symbol) {
