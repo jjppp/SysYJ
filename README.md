@@ -11,11 +11,12 @@ Coming soon.
 - [X] Convert to my AST
 - [X] Resolve symbols
 - [X] Linear IR design
-    - [ ] IR Interpreter
+    - [X] IR Interpreter
 - [X] CFG construction
     - [ ] SSA transformation
 - [ ] Local optimization
     - [X] Local Value Numbering(LVN)
+    - [X] Local Dead Code Elimination(DCE)
 - [ ] Global optimization
     - [ ] Constant Propagation
 - [ ] Inter procedural optimization (optional)
@@ -53,6 +54,7 @@ Arrays can be initialized using bracket expressions. Positions not specified in 
 int arr[114][514] = {
     { 1, 1, 4, 5, 1, 4},
     { 1, 9, 1, 9, 8, 1, 0},
+    6, 6, 6
 };
 ```
 
@@ -60,9 +62,21 @@ int arr[114][514] = {
 
 const expressions can be evaluated at compile time.
 
+```c
+const int N = 114;
+const int constA[N * 2 + 1] = { N, 514 };
+const int constB[constA[0]][2] = { { 1919, 810 } };
+
+int main() {
+  const int local[4] = { 1, 2, 3, 4 };
+  return constB[1][0] - local[N % 3]; // 1918
+}
+ 
+```
+
 ## Function
 
-Function can return `void` `int` `float` only.
+Functions return `Void` `Int` `Flt` only.
 
 ## Library Functions
 
@@ -72,11 +86,11 @@ Function can return `void` `int` `float` only.
 
 ## `putch(int ch)`
 
-## `getarray(int a[], int n)`
+## `int getarray(int a[])`
 
-## `getfarray(float f[], int n)`
+## `int getfarray(float f[])`
 
-## `getch()`
+## `int getch()`
 
 # IR Spec
 
@@ -86,38 +100,101 @@ Local Arrays are allocated when the function it belongs to executes.
 
 Local Variables can be treated as virtual registers.
 
+## Constructs
+
+A program in the form of IR consists of several functions and allocations.
+
+i.e. A program is a `List<Fun | Alloc>`, where each `Fun` contains a `List<Instr>`that makes up the function body.
+
 ## Basics
 
 ### Operands
 
-* Val. Including `Int` `Flt` `Addr`
+* Val. Literals including `Int` `Flt` `Ptr` `Void`
 * Var. All local variables can be used directly without declaration.
 
-### Expressions
+### Definition
 
-* Binary Exp.
-* Unary Exp.
-* FunCall Exp.
-* Load Exp.
+A definition is a raw assignment in the form of `var = rhs`, where `var` must be `Var` and `rhs` can be either `Val`
+or `Var`.
 
-Raw assignments are treated as Unary Exp with op=`NONE`.
+### Binary
+
+Binary expressions are in the form of `var = OP lhs rhs`.
+
+* `ADD`, `FADD`, `PADD`. Addition OPs, prefix stands for `Int` `Flt` and `Ptr` ADD.
+* `SUB`, `FSUB`.
+* `MUL`, `FMUL`.
+* `DIV`, `FDIV`.
+* `MOD`,
+* `LT`, `LE`, `GT`, `GE`, `NE`, `EQ`.
+* `AND`, `OR`
+
+### Unary
+
+`var = OP sub`
+
+* `NEG`, `POS`
+* `NOT`
+* `TOF`, `TOI`. Conversion between `Flt` and `Int`.
+
+### Function Call
+
+`var = CALL funSig [argList]`
+
+#### Function Signature
+
+Function Signature is a 4-tuple `(name, retType, [argTypes], [params])` that identifies this function.
+
+### Load & Store
+
+`var = LOAD loc`, where `loc` is a `Var` of type `Loc`.
+
+`loc = STORE rhs`, where `loc` is a `Var` of type `Loc`.
 
 ## Control flow
 
-* Jump.
-* Branch.
-* Label.
-* Ret.
+### Jump
+
+Jump. `JMP label`
+
+### Branch
+
+`BR cond lTru lFls` reads `cond` and determine
+
+* if the value of `cond` is zero, then goto `lFls`.
+* otherwise, goto `lTru`.
+
+### Label
+
+Labels mark positions that `JMP` and `BR` can transfer their control flow to.
+
+### Return
+
+`RET var`.
+
+A `RET var` ends current function, take `var` as the return value and assign it to `lhs` of the call site.
 
 ## Memory
 
-* Global Alloc.
-* Local Alloc.
+TODO
 
 ## Types
 
-* Int
-* Flt
-* Ptr of (Int or Flt)
+### Void
 
-爭取不咕咕咕
+Trivial type for trivial values.
+
+### Int
+
+An `Int` typed variable holds a 32-bit 2's-complement encoded signed integer.
+
+### Flt
+
+A `Flt` typed variable holds a 32-bit IEEE-754 standard floating point number.
+
+### Loc\<T\>
+
+`Loc` is a type constructor that takes a BaseType `T` and returns a new Type `Loc<T>`.
+
+A `Loc<T>` typed variable points to a location that holds values of type `T`.
