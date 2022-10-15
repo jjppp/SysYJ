@@ -1,10 +1,15 @@
 package org.jjppp.tools.optimize.lvn;
 
+import org.jjppp.ast.exp.op.BiOp;
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
-import org.jjppp.ir.instr.*;
+import org.jjppp.ir.instr.BiExp;
+import org.jjppp.ir.instr.Instr;
+import org.jjppp.ir.instr.InstrVisitor;
+import org.jjppp.ir.instr.UnExp;
 import org.jjppp.ir.instr.memory.Load;
 import org.jjppp.runtime.BaseVal;
+import org.jjppp.runtime.Int;
 
 import static org.jjppp.tools.optimize.lvn.ValTab.Val;
 
@@ -39,7 +44,41 @@ public final class ValMarker implements InstrVisitor<Val> {
 
     @Override
     public Val visit(BiExp exp) {
-        return new Val.BiVal(exp.op(), from(exp.lhs()), from(exp.rhs()));
+        int lhs = from(exp.lhs());
+        int rhs = from(exp.rhs());
+        BiOp op = exp.op();
+        Ope lhsOpe = valTab.belong(lhs);
+        Ope rhsOpe = valTab.belong(rhs);
+        if (lhsOpe instanceof Int lhsVal && rhsOpe instanceof Int rhsVal) {
+            return new Val.RawVal(op.apply(lhsVal, rhsVal));
+        }
+        switch (op) {
+            case ADD -> {
+                if (lhsOpe.equals(Int.from(0))) {
+                    return new Val.RawVal(rhsOpe);
+                } else if (rhsOpe.equals(Int.from(0))) {
+                    return new Val.RawVal(lhsOpe);
+                } else {
+                    return new Val.BiVal(op, lhs, rhs);
+                }
+            }
+            case MUL -> {
+                if (lhsOpe.equals(Int.from(1))) {
+                    return new Val.RawVal(rhsOpe);
+                } else if (rhsOpe.equals(Int.from(1))) {
+                    return new Val.RawVal(lhsOpe);
+                } else if (lhsOpe.equals(Int.from(0))) {
+                    return new Val.RawVal(Int.from(0));
+                } else if (rhsOpe.equals(Int.from(0))) {
+                    return new Val.RawVal(Int.from(0));
+                } else {
+                    return new Val.BiVal(op, lhs, rhs);
+                }
+            }
+            default -> {
+                return new Val.BiVal(op, lhs, rhs);
+            }
+        }
     }
 
     @Override

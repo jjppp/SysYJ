@@ -1,5 +1,6 @@
 package org.jjppp.tools.optimize.lvn;
 
+import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
 import org.jjppp.ir.cfg.Block;
 import org.jjppp.ir.instr.*;
@@ -52,10 +53,14 @@ public final class LVN implements InstrVisitor<Instr> {
         } else {
             int id = valTab.alloc(val, var);
             valTab.hold(var, id);
-            Val.BiVal biVal = (Val.BiVal) val;
-            return new BiExp(var, exp.op(),
-                    valTab.belong(biVal.lhs()),
-                    valTab.belong(biVal.rhs()));
+            if (val instanceof Val.BiVal biVal) {
+                return new BiExp(var, exp.op(),
+                        valTab.belong(biVal.lhs()),
+                        valTab.belong(biVal.rhs()));
+            } else if (val instanceof Val.RawVal rawVal) {
+                return Def.of(var, rawVal.ope());
+            }
+            throw new AssertionError("TODO");
         }
     }
 
@@ -125,7 +130,15 @@ public final class LVN implements InstrVisitor<Instr> {
 
     @Override
     public Instr visit(Br br) {
-        return br;
+        Ope cond = valTab.belong(marker.from(br.cond()));
+        if (cond instanceof Var var) {
+            return Br.of(var, br.sTru(), br.sFls());
+        } else if (cond instanceof org.jjppp.runtime.Val val) {
+            return Jmp.of(val.toInt().value() != 0
+                    ? br.sTru()
+                    : br.sFls());
+        }
+        throw new AssertionError("TODO");
     }
 
     @Override

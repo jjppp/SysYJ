@@ -4,6 +4,7 @@ import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.Binary;
 import org.jjppp.ast.decl.VarDecl;
 import org.jjppp.ast.exp.op.BiOp;
+import org.jjppp.runtime.BaseVal;
 import org.jjppp.runtime.Int;
 import org.jjppp.runtime.Val;
 import org.jjppp.type.IntType;
@@ -58,7 +59,7 @@ public final class BinExp extends Binary<Exp> implements OpExp {
 
     @Override
     public Val constEval() {
-        return op.apply(getLhs().constEval(), getRhs().constEval());
+        return op.apply((BaseVal) getLhs().constEval(), (BaseVal) getRhs().constEval());
     }
 
     @Override

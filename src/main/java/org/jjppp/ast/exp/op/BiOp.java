@@ -1,10 +1,11 @@
 package org.jjppp.ast.exp.op;
 
+import org.jjppp.runtime.BaseVal;
 import org.jjppp.runtime.Val;
 
 import java.util.function.BinaryOperator;
 
-public enum BiOp implements BinaryOperator<Val>, Op {
+public enum BiOp implements BinaryOperator<BaseVal>, Op {
     ADD, SUB, MUL, DIV, MOD,
     FADD, FSUB, FMUL, FDIV,
     PADD,
@@ -13,13 +14,14 @@ public enum BiOp implements BinaryOperator<Val>, Op {
     AND, OR;
 
     @Override
-    public Val apply(Val lhs, Val rhs) {
+    public BaseVal apply(BaseVal lhs, BaseVal rhs) {
         String name = this.toString().toLowerCase();
         try {
-            return (Val) lhs.getClass()
+            return (BaseVal) lhs.getClass()
                     .getMethod(name, Val.class)
                     .invoke(lhs, rhs);
         } catch (Exception e) {
+            System.out.println(name);
             throw new RuntimeException(e);
         }
     }
