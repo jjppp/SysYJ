@@ -9,7 +9,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class FunctionalTest {
-    public final static String FUNCTIONAL_PATH = ParserTest.FOLDER_PATH + "official/functional/";
+    public final static String FUNCTIONAL_PATH = "official/functional/";
+    public final static String FUNCTIONAL_HIDDEN_PATH = "official/hidden_functional/";
 
     private final static Set<String> skipFiles = Set.of(
             "04_arr_defn3.sy",
@@ -20,12 +21,15 @@ public final class FunctionalTest {
             "52_scope.sy",
             "53_scope2.sy",
             "86_long_code2.sy",
-            "99_matrix_tran.sy"
+            "99_matrix_tran.sy",
+
+            "07_arr_init_nd.sy",
+            "08_global_arr_init.sy"
     );
 
     private void checkOutput(String basename) throws IOException {
-        File expect = new File(ParserTest.FOLDER_PATH + "official/functional/" + basename + "out");
-        File my = new File(ParserTest.FOLDER_PATH + "official/functional/" + basename + "myout");
+        File expect = new File(ParserTest.FOLDER_PATH + basename + "out");
+        File my = new File(ParserTest.FOLDER_PATH + basename + "myout");
         try (FileInputStream expectOut = new FileInputStream(expect);
              FileInputStream myOut = new FileInputStream(my)) {
             Assertions.assertArrayEquals(
@@ -38,9 +42,9 @@ public final class FunctionalTest {
         System.out.println(file + ": ");
         String substring = file.substring(0, file.length() - 2);
         try {
-            Main.main(ParserTest.FOLDER_PATH + "official/functional/" + file,
-                    ParserTest.FOLDER_PATH + "official/functional/" + substring + "in",
-                    ParserTest.FOLDER_PATH + "official/functional/" + substring + "myout");
+            Main.main(ParserTest.FOLDER_PATH + file,
+                    ParserTest.FOLDER_PATH + substring + "in",
+                    ParserTest.FOLDER_PATH + substring + "myout");
             checkOutput(substring);
         } catch (AssertionError error) {
             if (error.getMessage().equals("TODO")) {
@@ -50,9 +54,9 @@ public final class FunctionalTest {
     }
 
     @Test
-    void testAll() throws IOException {
-        System.out.println(FUNCTIONAL_PATH);
-        File functionalPath = new File(FUNCTIONAL_PATH);
+    void testBasics() throws IOException {
+        System.out.println(ParserTest.FOLDER_PATH + FUNCTIONAL_PATH);
+        File functionalPath = new File(ParserTest.FOLDER_PATH + FUNCTIONAL_PATH);
         String[] files = Objects.requireNonNull(functionalPath.list());
 
         SortedSet<String> sortedSet = Arrays.stream(files)
@@ -60,7 +64,23 @@ public final class FunctionalTest {
                 .filter(x -> !skipFiles.contains(x))
                 .collect(Collectors.toCollection(TreeSet::new));
         for (var file : sortedSet) {
-            test(file);
+            test(FUNCTIONAL_PATH + file);
+        }
+        System.out.println("DONE");
+    }
+
+    @Test
+    void testHidden() throws IOException {
+        System.out.println(ParserTest.FOLDER_PATH + FUNCTIONAL_HIDDEN_PATH);
+        File functionalPath = new File(ParserTest.FOLDER_PATH + FUNCTIONAL_HIDDEN_PATH);
+        String[] files = Objects.requireNonNull(functionalPath.list());
+
+        SortedSet<String> sortedSet = Arrays.stream(files)
+                .filter(x -> x.endsWith(".sy"))
+                .filter(x -> !skipFiles.contains(x))
+                .collect(Collectors.toCollection(TreeSet::new));
+        for (var file : sortedSet) {
+            test(FUNCTIONAL_HIDDEN_PATH + file);
         }
         System.out.println("DONE");
     }
