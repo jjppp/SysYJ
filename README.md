@@ -13,14 +13,25 @@ Coming soon.
 - [X] Linear IR design
     - [X] IR Interpreter
 - [X] CFG construction
+    - [ ] Dominator tree construction
     - [ ] SSA transformation
-- [ ] Local optimization
+- [ ] Local optimization/analysis
     - [X] Local Value Numbering(LVN)
     - [X] Local Dead Code Elimination(DCE)
-- [ ] Global optimization
-    - [ ] Constant Propagation
+    - [ ] Loop invariant
+    - [ ] Code motion
+- [ ] Global optimization/analysis
+    - [X] Dataflow analysis framework
+        - [X] Constant propagation
+        - [ ] Reaching definition
+        - [ ] Live variables
 - [ ] Inter procedural optimization (optional)
-- [ ] Code generation (x86-64)
+- [ ] Code generation
+    - [ ] X86-64
+    - [ ] risc-v 32
+    - [ ] ARM V7
+- [ ] Peephole optimization
+    - [ ] Pattern matching
 
 # SysY Spec (Partially)
 
