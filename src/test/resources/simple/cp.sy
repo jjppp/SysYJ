@@ -1,0 +1,26 @@
+int loop() {
+    int n = 16;
+    int i = 1;
+    int x = 2;
+    int y = 3;
+    int sum = 0;
+    while (i < n) {
+        int t = y - x;
+        sum = sum + t;
+        i = i + 1;
+    }
+    return sum;
+}
+
+int main() {
+    int i = getint();
+    int x = 1;
+    int y = 2;
+    int z = 0;
+    if (i == 0) {
+        z = x + y;
+    } else {
+        z = y * 2 - x;
+    }
+    return z;
+}

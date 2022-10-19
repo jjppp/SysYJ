@@ -82,16 +82,24 @@ public final class CFG {
                 .collect(Collectors.toSet());
     }
 
-    public Node fromBlock(Block block) {
-        return blockNodeMap.get(block);
-    }
-
     public Set<Var> useSet() {
         return nodes().stream()
                 .map(Node::block)
                 .map(Block::useSet)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
+    }
+
+    public Set<Var> defSet() {
+        return nodes().stream()
+                .map(Node::block)
+                .map(Block::defSet)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+    }
+
+    public Node fromBlock(Block block) {
+        return blockNodeMap.get(block);
     }
 
     public void addBlock(Block block) {

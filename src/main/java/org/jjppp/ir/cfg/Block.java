@@ -45,6 +45,13 @@ public record Block(List<Instr> instrList) implements Iterable<Instr> {
                 .collect(Collectors.toSet());
     }
 
+    public Set<Var> defSet() {
+        return instrList.stream()
+                .map(Instr::defSet)
+                .flatMap(Optional::stream)
+                .collect(Collectors.toSet());
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

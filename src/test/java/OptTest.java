@@ -13,6 +13,11 @@ public final class OptTest {
     }
 
     @Test
+    void testCP() {
+        run("simple/cp.sy");
+    }
+
+    @Test
     void testDead() {
         run("simple/dead.sy");
     }

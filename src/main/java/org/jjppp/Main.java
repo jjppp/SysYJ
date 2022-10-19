@@ -7,6 +7,7 @@ import org.jjppp.ir.IRCode;
 import org.jjppp.ir.cfg.CFG;
 import org.jjppp.ir.cfg.CFGBuilder;
 import org.jjppp.ir.cfg.CFGLinearize;
+import org.jjppp.tools.analysis.dataflow.CP.CP;
 import org.jjppp.tools.interpret.Interpreter;
 import org.jjppp.tools.optimize.dce.DCE;
 import org.jjppp.tools.optimize.lvn.LVN;
@@ -28,7 +29,13 @@ public class Main {
             cfg.toFolder("/home/jjppp/tmp/cfg/");
             cfg.nodes().forEach(x -> x.setBlock(LVN.doLVN(x.block())));
             DCE.doDCE(cfg);
-            cfg.toFolder("/home/jjppp/tmp/cfg/opt-");
+            cfg.toFolder("/home/jjppp/tmp/cfg/dce-");
+
+            CP cp = new CP(cfg);
+            cfg = cp.doCP();
+            DCE.doDCE(cfg);
+            cfg.toFolder("/home/jjppp/tmp/cfg/cp-dce-");
+
             CFGLinearize linearize = new CFGLinearize(cfg);
             funList.add(linearize.toFun());
         }

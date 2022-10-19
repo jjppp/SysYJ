@@ -7,6 +7,7 @@ import org.jjppp.ir.instr.memory.Alloc;
 import org.jjppp.ir.instr.memory.GAlloc;
 import org.jjppp.ir.instr.memory.LAlloc;
 
+import java.util.Optional;
 import java.util.Set;
 
 public interface Instr {
@@ -29,6 +30,10 @@ public interface Instr {
     <R> R accept(InstrVisitor<R> visitor);
 
     Set<Var> useSet();
+
+    default Optional<Var> defSet() {
+        return Optional.ofNullable(var());
+    }
 
     Var var();
 
