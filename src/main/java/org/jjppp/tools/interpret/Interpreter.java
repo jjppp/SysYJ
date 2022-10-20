@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 
 public final class Interpreter implements InstrVisitor<Integer> {
     private final static boolean TRACE_ON = false;
-    private final List<Map<Var, Object>> valMap = new ArrayList<>();
+    private final List<Map<Var, Val>> valMap = new ArrayList<>();
     private final Stack<Map<Label, Integer>> mapStack = new Stack<>();
     private final IRCode code;
     private final PrintStream printStream;
@@ -89,11 +89,11 @@ public final class Interpreter implements InstrVisitor<Integer> {
         return x * sign;
     }
 
-    private Object valOf(Ope ope) {
+    private Val valOf(Ope ope) {
         if (ope instanceof BaseVal baseVal) {
             return Objects.requireNonNull(baseVal);
         } else if (ope instanceof Var var) {
-            for (Map<Var, Object> map : valMap) {
+            for (Map<Var, Val> map : valMap) {
                 if (map.containsKey(var)) {
                     return map.get(var);
                 }
@@ -103,7 +103,7 @@ public final class Interpreter implements InstrVisitor<Integer> {
         throw new RuntimeException("");
     }
 
-    private Object run(Fun.Signature signature, Call call) {
+    private Val run(Fun.Signature signature, Call call) {
         Fun fun = code.funList().stream()
                 .filter(x -> x.signature().equals(signature))
                 .findAny().orElseThrow();
@@ -112,25 +112,29 @@ public final class Interpreter implements InstrVisitor<Integer> {
         mapStack.add(labelMap);
         valMap.add(0, new HashMap<>());
         List<Instr> body = fun.body();
-        List<Var> args = fun.signature().args();
+        List<Var> params = fun.signature().args();
         for (int i = 0; i < body.size(); ++i) {
             if (body.get(i) instanceof Label label) {
                 labelMap.put(label, i + 1);
             }
         }
 
-        IntStream.range(0, args.size())
-                .forEach(i -> valMap.get(0).put(args.get(i), valOf(call.args().get(i))));
-        Object retVal;
+        List<Val> valList = call.args().stream()
+                .map(this::valOf).toList();
+
+        IntStream.range(0, params.size())
+                .forEach(i -> valMap.get(0).put(params.get(i), valList.get(i)));
+        Val retVal;
         int pc = 0;
 
         while (true) {
             INSTR_COUNT += 1;
             Instr instr = body.get(pc);
             if (instr instanceof Ret ret) {
-                retVal = ret.retVal();
-                if (retVal instanceof Var var) {
+                if (ret.retVal() instanceof Var var) {
                     retVal = valOf(var);
+                } else {
+                    retVal = (Val) ret.retVal();
                 }
                 mapStack.pop();
                 valMap.remove(0);
@@ -186,8 +190,8 @@ public final class Interpreter implements InstrVisitor<Integer> {
 
     @Override
     public Integer visit(BiExp exp) {
-        Val lhs = (Val) valOf(exp.lhs());
-        Val rhs = (Val) valOf(exp.rhs());
+        Val lhs = valOf(exp.lhs());
+        Val rhs = valOf(exp.rhs());
         var res = Objects.requireNonNull(switch (exp.op()) {
             case ADD, PADD, FADD -> lhs.add(rhs);
             case MUL, FMUL -> lhs.mul(rhs);
@@ -210,7 +214,7 @@ public final class Interpreter implements InstrVisitor<Integer> {
 
     @Override
     public Integer visit(UnExp exp) {
-        Val val = (Val) valOf(exp.sub());
+        Val val = valOf(exp.sub());
         var res = switch (exp.op()) {
             case NEG -> val.neg();
             case TOF -> val.toFloat();
