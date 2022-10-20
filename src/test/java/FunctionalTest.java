@@ -21,6 +21,10 @@ public final class FunctionalTest {
             "52_scope.sy",
             "53_scope2.sy",
             "86_long_code2.sy",
+            "95_float.sy",
+            "96_matrix_add.sy",
+            "97_matrix_sub.sy",
+            "98_matrix_mul.sy",
             "99_matrix_tran.sy",
 
             "07_arr_init_nd.sy",
@@ -41,16 +45,10 @@ public final class FunctionalTest {
     private void test(String file) throws IOException {
         System.out.println(file + ": ");
         String substring = file.substring(0, file.length() - 2);
-        try {
-            Main.main(ParserTest.FOLDER_PATH + file,
-                    ParserTest.FOLDER_PATH + substring + "in",
-                    ParserTest.FOLDER_PATH + substring + "myout");
-            checkOutput(substring);
-        } catch (AssertionError error) {
-            if (error.getMessage().equals("TODO")) {
-                System.out.println("\t TODO:");
-            }
-        }
+        Main.main(ParserTest.FOLDER_PATH + file,
+                ParserTest.FOLDER_PATH + substring + "in",
+                ParserTest.FOLDER_PATH + substring + "myout");
+        checkOutput(substring);
     }
 
     @Test
@@ -63,6 +61,7 @@ public final class FunctionalTest {
                 .filter(x -> x.endsWith(".sy"))
                 .filter(x -> !skipFiles.contains(x))
                 .collect(Collectors.toCollection(TreeSet::new));
+        test(FUNCTIONAL_PATH + "25_while_if.sy");
         for (var file : sortedSet) {
             test(FUNCTIONAL_PATH + file);
         }

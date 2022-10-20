@@ -24,12 +24,12 @@ public final class LocalDefParser extends DefaultVisitor<List<Item>> {
         this.type = type;
     }
 
-    public static List<Item> parse(SysYParser.DefContext ctx, BaseType type) {
+    public static List<Item> parse(SysYParser.AssContext ctx, BaseType type) {
         return ctx.accept(new LocalDefParser(type));
     }
 
     @Override
-    public List<Item> visitDef(SysYParser.DefContext ctx) {
+    public List<Item> visitAss(SysYParser.AssContext ctx) {
         Objects.requireNonNull(ctx.exp());
         String name = ctx.ID().getText();
 

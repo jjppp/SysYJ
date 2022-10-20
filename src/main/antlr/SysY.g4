@@ -7,14 +7,14 @@ package org.jjppp.parser;
 compUnit : decl*;
 
 decl
-    : CONST bType def (',' def)* ';'                    #constDecl
-    | bType def (',' def)* ';'                          #varDecl
+    : CONST bType ass (',' ass)* ';'                    #constDecl
+    | bType ass (',' ass)* ';'                          #varDecl
     | funcType ID '(' funcFParams? ')' scope            #funcDecl
     ;
 
 bType : INT | FLOAT;
 
-def : ID ('[' exp ']')* ('=' initVal)?;
+ass : ID ('[' exp ']')* ('=' initVal)?;
 
 initVal
     : '{' (initVal (',' initVal)*)? '}'                 #arrInitVal

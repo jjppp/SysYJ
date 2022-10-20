@@ -13,6 +13,11 @@ public final class OptTest {
     }
 
     @Test
+    void testDOM() {
+        run("official/functional/69_expr_eval.sy");
+    }
+
+    @Test
     void testCP() {
         run("simple/cp.sy");
     }

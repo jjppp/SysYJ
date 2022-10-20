@@ -13,7 +13,7 @@ public class DefaultVisitor<T> implements SysYVisitor<T> {
     }
 
     @Override
-    public T visitDef(SysYParser.DefContext ctx) {
+    public T visitAss(SysYParser.AssContext ctx) {
         return visitDefault();
     }
 

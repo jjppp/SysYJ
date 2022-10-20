@@ -23,7 +23,7 @@ public final class LocalDeclParser extends DefaultVisitor<List<Item>> {
 
     @Override
     public List<Item> visitConstDecl(SysYParser.ConstDeclContext ctx) {
-        return ctx.def().stream()
+        return ctx.ass().stream()
                 .map(x -> LocalDefParser.parse(x, TypeParser.parse(ctx.bType(), true)))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
@@ -32,7 +32,7 @@ public final class LocalDeclParser extends DefaultVisitor<List<Item>> {
     @Override
     public List<Item> visitVarDecl(SysYParser.VarDeclContext ctx) {
         BaseType type = TypeParser.parse(ctx.bType(), false);
-        return ctx.def().stream()
+        return ctx.ass().stream()
                 .map(x -> LocalDefParser.parse(x, type))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());

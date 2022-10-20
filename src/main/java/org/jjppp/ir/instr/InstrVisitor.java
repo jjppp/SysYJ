@@ -34,8 +34,8 @@ public interface InstrVisitor<R> {
         return visitDefault(call);
     }
 
-    default R visit(Def def) {
-        return visitDefault(def);
+    default R visit(Ass ass) {
+        return visitDefault(ass);
     }
 
     default R visit(Load load) {

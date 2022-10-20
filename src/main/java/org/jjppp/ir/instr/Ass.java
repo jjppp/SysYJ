@@ -6,9 +6,9 @@ import org.jjppp.ir.Var;
 import java.util.Collections;
 import java.util.Set;
 
-public record Def(Var var, Ope rhs) implements Instr {
-    public static Def of(Var var, Ope ope) {
-        return new Def(var, ope);
+public record Ass(Var var, Ope rhs) implements Instr {
+    public static Ass of(Var var, Ope ope) {
+        return new Ass(var, ope);
     }
 
     @Override

@@ -283,9 +283,9 @@ public final class Interpreter implements InstrVisitor<Integer> {
     }
 
     @Override
-    public Integer visit(Def def) {
-        var val = valOf(def.rhs());
-        valMap.get(0).put(def.var(), val);
+    public Integer visit(Ass ass) {
+        var val = valOf(ass.rhs());
+        valMap.get(0).put(ass.var(), val);
         println("\t\t" + val);
         return -1;
     }

@@ -26,7 +26,7 @@ public final class GlobalDeclParser extends DefaultVisitor<List<Decl>> {
     @Override
     public List<Decl> visitConstDecl(SysYParser.ConstDeclContext ctx) {
         BaseType type = TypeParser.parse(ctx.bType(), true);
-        return ctx.def().stream()
+        return ctx.ass().stream()
                 .map(x -> GlobalDefParser.parse(x, type))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
@@ -35,7 +35,7 @@ public final class GlobalDeclParser extends DefaultVisitor<List<Decl>> {
     @Override
     public List<Decl> visitVarDecl(SysYParser.VarDeclContext ctx) {
         BaseType type = TypeParser.parse(ctx.bType(), false);
-        return ctx.def().stream()
+        return ctx.ass().stream()
                 .map(x -> GlobalDefParser.parse(x, type))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());

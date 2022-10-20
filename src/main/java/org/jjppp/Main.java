@@ -7,7 +7,8 @@ import org.jjppp.ir.IRCode;
 import org.jjppp.ir.cfg.CFG;
 import org.jjppp.ir.cfg.CFGBuilder;
 import org.jjppp.ir.cfg.CFGLinearize;
-import org.jjppp.tools.analysis.dataflow.CP.CP;
+import org.jjppp.tools.analysis.dataflow.cp.CP;
+import org.jjppp.tools.analysis.dataflow.dom.DOM;
 import org.jjppp.tools.interpret.Interpreter;
 import org.jjppp.tools.optimize.dce.DCE;
 import org.jjppp.tools.optimize.lvn.LVN;
@@ -17,6 +18,7 @@ import org.jjppp.tools.transform.Transform3AC;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,12 +31,24 @@ public class Main {
             cfg.toFolder("/home/jjppp/tmp/cfg/");
             cfg.nodes().forEach(x -> x.setBlock(LVN.doLVN(x.block())));
             DCE.doDCE(cfg);
-            cfg.toFolder("/home/jjppp/tmp/cfg/dce-");
+            cfg.toFolder("/home/jjppp/tmp/cfg/O1-");
 
             CP cp = new CP(cfg);
             cfg = cp.doCP();
             DCE.doDCE(cfg);
-            cfg.toFolder("/home/jjppp/tmp/cfg/cp-dce-");
+            cfg.toFolder("/home/jjppp/tmp/cfg/O2-");
+
+            DOM dom = new DOM(cfg);
+            var doms = dom.doDOM();
+
+            File file = new File("/home/jjppp/tmp/cfg/dom-" + fun.signature().name() + ".txt");
+            try (PrintStream printStream = new PrintStream(file)) {
+                for (var entry : doms.entrySet()) {
+                    printStream.println(entry.getKey().block().instrList().get(0) + " is dominated by " + entry.getValue());
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("");
+            }
 
             CFGLinearize linearize = new CFGLinearize(cfg);
             funList.add(linearize.toFun());

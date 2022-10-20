@@ -27,12 +27,12 @@ public final class GlobalDefParser extends DefaultVisitor<List<Decl>> {
         this.type = type;
     }
 
-    public static List<Decl> parse(SysYParser.DefContext ctx, BaseType type) {
+    public static List<Decl> parse(SysYParser.AssContext ctx, BaseType type) {
         return ctx.accept(new GlobalDefParser(type));
     }
 
     @Override
-    public List<Decl> visitDef(SysYParser.DefContext ctx) {
+    public List<Decl> visitAss(SysYParser.AssContext ctx) {
         Objects.requireNonNull(ctx.exp());
         String name = ctx.ID().getText();
 

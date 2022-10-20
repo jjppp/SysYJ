@@ -49,7 +49,7 @@ public final class LVN implements InstrVisitor<Instr> {
         if (valTab.contains(val)) {
             int id = valTab.get(val);
             valTab.hold(var, id);
-            return new Def(var, valTab.belong(id));
+            return new Ass(var, valTab.belong(id));
         } else {
             int id = valTab.alloc(val, var);
             valTab.hold(var, id);
@@ -58,7 +58,7 @@ public final class LVN implements InstrVisitor<Instr> {
                         valTab.belong(biVal.lhs()),
                         valTab.belong(biVal.rhs()));
             } else if (val instanceof Val.RawVal rawVal) {
-                return Def.of(var, rawVal.ope());
+                return Ass.of(var, rawVal.ope());
             }
             throw new AssertionError("TODO");
         }
@@ -71,7 +71,7 @@ public final class LVN implements InstrVisitor<Instr> {
         if (valTab.contains(val)) {
             int id = valTab.get(val);
             valTab.hold(var, id);
-            return new Def(var, valTab.belong(id));
+            return new Ass(var, valTab.belong(id));
         } else {
             int id = valTab.alloc(val, var);
             valTab.hold(var, id);
@@ -93,10 +93,10 @@ public final class LVN implements InstrVisitor<Instr> {
     }
 
     @Override
-    public Instr visit(Def def) {
-        int sub = marker.from(def.rhs());
-        valTab.hold(def.var(), sub);
-        return new Def(def.var(), valTab.belong(sub));
+    public Instr visit(Ass ass) {
+        int sub = marker.from(ass.rhs());
+        valTab.hold(ass.var(), sub);
+        return new Ass(ass.var(), valTab.belong(sub));
     }
 
     @Override

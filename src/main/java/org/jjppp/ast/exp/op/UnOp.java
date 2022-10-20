@@ -13,6 +13,7 @@ public enum UnOp implements UnaryOperator<Val>, Op {
     public Val apply(Val val) {
         return switch (this) {
             case NEG -> val.neg();
+            case NOT -> val.not();
             case POS -> val;
             default -> throw new AssertionError("TODO");
         };
