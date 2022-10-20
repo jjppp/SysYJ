@@ -1,4 +1,4 @@
-package org.jjppp.tools.analysis.dataflow.CP;
+package org.jjppp.tools.analysis.dataflow.cp;
 
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
@@ -19,7 +19,7 @@ import org.jjppp.tools.analysis.dataflow.DFA;
 
 import java.util.*;
 
-import static org.jjppp.tools.analysis.dataflow.CP.CPData.CPFact.*;
+import static org.jjppp.tools.analysis.dataflow.cp.CPData.CPFact.*;
 
 public final class CP extends DFA<CPData> implements InstrVisitor<CPData> {
     private CPData dataIn;
@@ -67,7 +67,7 @@ public final class CP extends DFA<CPData> implements InstrVisitor<CPData> {
                     @Override
                     public Instr visit(UnExp exp) {
                         CPData.CPFact subFact = fromOpe(exp.sub());
-                        return subFact.isConst() ? Def.of(exp.var(), (BaseVal) exp.op().apply(subFact.val())) : exp;
+                        return subFact.isConst() ? Ass.of(exp.var(), (BaseVal) exp.op().apply(subFact.val())) : exp;
                     }
 
                     @Override
@@ -76,9 +76,9 @@ public final class CP extends DFA<CPData> implements InstrVisitor<CPData> {
                     }
 
                     @Override
-                    public Instr visit(Def def) {
-                        CPData.CPFact rhsFact = fromOpe(def.rhs());
-                        return rhsFact.isConst() ? Def.of(def.var(), rhsFact.val()) : def;
+                    public Instr visit(Ass ass) {
+                        CPData.CPFact rhsFact = fromOpe(ass.rhs());
+                        return rhsFact.isConst() ? Ass.of(ass.var(), rhsFact.val()) : ass;
                     }
 
                     @Override
@@ -134,12 +134,9 @@ public final class CP extends DFA<CPData> implements InstrVisitor<CPData> {
     }
 
     @Override
-    protected CPData transfer(CFG.Node node, CPData dataIn) {
+    protected CPData transfer(Instr instr, CPData dataIn) {
         this.dataIn = new CPData(dataIn.varFactMap());
-        for (Instr instr : node.block().instrList()) {
-            this.dataIn = instr.accept(this);
-        }
-        return this.dataIn;
+        return instr.accept(this);
     }
 
     @Override
@@ -206,11 +203,11 @@ public final class CP extends DFA<CPData> implements InstrVisitor<CPData> {
     }
 
     @Override
-    public CPData visit(Def def) {
-        if (def.rhs() instanceof Var var) {
-            dataIn.put(def.var(), dataIn.get(var));
-        } else if (def.rhs() instanceof BaseVal val) {
-            dataIn.put(def.var(), CPData.CPFact.from(val));
+    public CPData visit(Ass ass) {
+        if (ass.rhs() instanceof Var var) {
+            dataIn.put(ass.var(), dataIn.get(var));
+        } else if (ass.rhs() instanceof BaseVal val) {
+            dataIn.put(ass.var(), CPData.CPFact.from(val));
         }
         return dataIn;
     }

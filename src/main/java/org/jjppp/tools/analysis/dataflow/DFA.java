@@ -1,6 +1,7 @@
 package org.jjppp.tools.analysis.dataflow;
 
 import org.jjppp.ir.cfg.CFG;
+import org.jjppp.ir.instr.Instr;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,7 +20,14 @@ public abstract class DFA<T extends AbsData<T>> {
 
     protected abstract void init();
 
-    protected abstract T transfer(CFG.Node node, T dataIn);
+    protected abstract T transfer(Instr instr, T dataIn);
+
+    protected T transfer(CFG.Node node, T dataIn) {
+        for (Instr instr : node.block().instrList()) {
+            dataIn = transfer(instr, dataIn);
+        }
+        return dataIn;
+    }
 
     protected Map<CFG.Node, T> solve() {
         queue.add(cfg.entry());

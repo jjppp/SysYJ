@@ -1,4 +1,4 @@
-package org.jjppp.tools.analysis.dataflow.CP;
+package org.jjppp.tools.analysis.dataflow.cp;
 
 import org.jjppp.ir.Var;
 import org.jjppp.runtime.BaseVal;
