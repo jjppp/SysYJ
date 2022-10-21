@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class CFG {
+    private static int NODE_ID_COUNT = 0;
     private final Fun.Signature fun;
     private final Map<Block, Node> blockNodeMap = new HashMap<>();
     private final Map<Node, Map<Node, Edge>> edgeFrom = new HashMap<>();
@@ -26,26 +27,26 @@ public final class CFG {
     public String toString() {
         StringBuilder builder = new StringBuilder("digraph \"" + fun.name() + "\" {\n");
         builder.append("labeljust=l\n");
-        HashMap<Node, Integer> map = new HashMap<>();
-        int cnt = 0;
         for (var node : nodes()) {
-            map.put(node, cnt);
-            builder.append(cnt);
+            builder.append(node.id());
             if (node.equals(entry()) || node.equals(exit())) {
-                builder.append(" [shape=rect, style=filled, fillcolor=gray, label=\"");
+                builder.append(" [shape=rect, style=filled, fillcolor=gray, xlabel=\"")
+                        .append(node.id())
+                        .append("\" label=\"");
             } else {
-                builder.append(" [shape=box, label=\"");
+                builder.append(" [shape=box, xlabel=\"")
+                        .append(node.id())
+                        .append("\" label=\"");
             }
             builder.append(node.block().toString())
                     .append("\"];\n");
-            cnt += 1;
         }
         for (var edge : edges()) {
             Node from = edge.from();
             Node to = edge.to();
-            builder.append(map.get(from))
+            builder.append(from.id())
                     .append(" -> ")
-                    .append(map.get(to))
+                    .append(to.id())
                     .append("[label=")
                     .append(edge.type())
                     .append("];\n");
@@ -144,11 +145,17 @@ public final class CFG {
         private final Set<Node> succ = new HashSet<>();
         private final Set<Node> pred = new HashSet<>();
         private final Set<Edge> outEdges = new HashSet<>();
+        private final int id;
         private Block block;
         private boolean lead = true;
 
         public Node(Block block) {
             this.block = block;
+            this.id = NODE_ID_COUNT++;
+        }
+
+        public int id() {
+            return id;
         }
 
         public Set<Node> getSucc() {

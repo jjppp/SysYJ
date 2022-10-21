@@ -55,7 +55,7 @@ public record Block(List<Instr> instrList) implements Iterable<Instr> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("instr count: ").append(size()).append("\n");
+        builder.append("instr count: ").append(size()).append("\\n");
         for (Instr instr : instrList) {
             builder.append(instr).append("\\n");
         }
