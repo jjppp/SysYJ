@@ -37,7 +37,8 @@ public abstract class DFA<T extends AbsData<T>> {
             if (!node.equals(cfg.entry())) {
                 T dataIn = node.getPred().stream()
                         .map(outMap::get)
-                        .reduce(inMap.get(node), AbsData::merge);
+                        .reduce(AbsData::merge)
+                        .orElseThrow();
                 inMap.put(node, dataIn);
             }
 
