@@ -9,6 +9,7 @@ import org.jjppp.ir.cfg.CFGBuilder;
 import org.jjppp.ir.cfg.CFGLinearize;
 import org.jjppp.tools.analysis.dataflow.cp.CP;
 import org.jjppp.tools.analysis.dataflow.dom.DOM;
+import org.jjppp.tools.analysis.loop.LI;
 import org.jjppp.tools.interpret.Interpreter;
 import org.jjppp.tools.optimize.dce.DCE;
 import org.jjppp.tools.optimize.lvn.LVN;
@@ -41,10 +42,24 @@ public class Main {
             DOM dom = new DOM(cfg);
             var doms = dom.doDOM();
 
-            File file = new File("/home/jjppp/tmp/cfg/dom-" + fun.signature().name() + ".txt");
-            try (PrintStream printStream = new PrintStream(file)) {
+            try (PrintStream printStream = new PrintStream("/home/jjppp/tmp/cfg/dom-" + fun.signature().name() + ".txt")) {
                 for (var entry : doms.entrySet()) {
-                    printStream.println(entry.getKey().block().instrList().get(0) + " is dominated by " + entry.getValue());
+                    printStream.println(entry.getKey().id() + " is dominated by ");
+                    for (var x : entry.getValue()) {
+                        printStream.println("\t" + x.id());
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("");
+            }
+
+            LI li = new LI(cfg, doms);
+            var loops = li.find();
+
+            try (PrintStream printStream = new PrintStream("/home/jjppp/tmp/cfg/loop-" + fun.signature().name() + ".txt")) {
+                for (var loop : loops) {
+                    loop.forEach(node -> printStream.println(node.id()));
+                    printStream.println();
                 }
             } catch (IOException e) {
                 throw new RuntimeException("");
