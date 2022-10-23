@@ -61,7 +61,6 @@ public final class FunctionalTest {
                 .filter(x -> x.endsWith(".sy"))
                 .filter(x -> !skipFiles.contains(x))
                 .collect(Collectors.toCollection(TreeSet::new));
-        test(FUNCTIONAL_PATH + "25_while_if.sy");
         for (var file : sortedSet) {
             test(FUNCTIONAL_PATH + file);
         }

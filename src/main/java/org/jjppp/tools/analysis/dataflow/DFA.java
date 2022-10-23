@@ -30,7 +30,7 @@ public abstract class DFA<T extends AbsData<T>> {
     }
 
     protected Map<CFG.Node, T> solve() {
-        queue.add(cfg.entry());
+        queue.addAll(cfg.nodes());
         while (!queue.isEmpty()) {
             CFG.Node node = queue.poll();
 

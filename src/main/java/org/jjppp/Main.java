@@ -9,9 +9,11 @@ import org.jjppp.ir.cfg.CFGBuilder;
 import org.jjppp.ir.cfg.CFGLinearize;
 import org.jjppp.tools.analysis.dataflow.cp.CP;
 import org.jjppp.tools.analysis.dataflow.dom.DOM;
+import org.jjppp.tools.analysis.dataflow.reach.RD;
 import org.jjppp.tools.analysis.loop.LI;
 import org.jjppp.tools.interpret.Interpreter;
 import org.jjppp.tools.optimize.dce.DCE;
+import org.jjppp.tools.optimize.inv.LoopInv;
 import org.jjppp.tools.optimize.lvn.LVN;
 import org.jjppp.tools.parse.Parser;
 import org.jjppp.tools.transform.Transform3AC;
@@ -19,7 +21,6 @@ import org.jjppp.tools.transform.Transform3AC;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,32 +42,25 @@ public class Main {
 
             DOM dom = new DOM(cfg);
             var doms = dom.doDOM();
-
-            try (PrintStream printStream = new PrintStream("/home/jjppp/tmp/cfg/dom-" + fun.signature().name() + ".txt")) {
-                for (var entry : doms.entrySet()) {
-                    printStream.println(entry.getKey().id() + " is dominated by ");
-                    for (var x : entry.getValue()) {
-                        printStream.println("\t" + x.id());
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("");
-            }
-
             LI li = new LI(cfg, doms);
             var loops = li.find();
+            RD rd = new RD(cfg);
+            var reach = rd.doRD();
 
-            try (PrintStream printStream = new PrintStream("/home/jjppp/tmp/cfg/loop-" + fun.signature().name() + ".txt")) {
-                for (var loop : loops) {
-                    loop.forEach(node -> printStream.println(node.id()));
-                    printStream.println();
+            dom.toFolder("/home/jjppp/tmp/cfg/dom-");
+            li.toFolder("/home/jjppp/tmp/cfg/loop-");
+            rd.toFolder("/home/jjppp/tmp/cfg/reach-");
+
+            for (var loop : loops) {
+                for (var node : loop) {
+                    LoopInv inv = new LoopInv(node, loop, reach.get(node));
+                    inv.mark();
                 }
-            } catch (IOException e) {
-                throw new RuntimeException("");
             }
+            DCE.doDCE(cfg);
+            cfg.toFolder("/home/jjppp/tmp/cfg/O3-");
 
-            CFGLinearize linearize = new CFGLinearize(cfg);
-            funList.add(linearize.toFun());
+            funList.add(new CFGLinearize(cfg).toFun());
         }
         return new IRCode(funList, code.gAllocList());
     }

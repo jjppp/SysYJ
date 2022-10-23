@@ -7,7 +7,7 @@ import org.jjppp.ir.type.BaseType;
 import java.util.Collections;
 import java.util.Set;
 
-public abstract class Alloc implements Instr {
+public abstract class Alloc extends Instr {
     private final BaseType baseType;
     private final Var var;
     private final int length;

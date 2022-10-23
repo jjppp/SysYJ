@@ -8,7 +8,35 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record BiExp(Var var, BiOp op, Ope lhs, Ope rhs) implements Instr {
+public final class BiExp extends Instr {
+    private final Var var;
+    private final BiOp op;
+    private final Ope lhs;
+    private final Ope rhs;
+
+    public BiExp(Var var, BiOp op, Ope lhs, Ope rhs) {
+        this.var = var;
+        this.op = op;
+        this.lhs = lhs;
+        this.rhs = rhs;
+    }
+
+    public Var var() {
+        return var;
+    }
+
+    public BiOp op() {
+        return op;
+    }
+
+    public Ope lhs() {
+        return lhs;
+    }
+
+    public Ope rhs() {
+        return rhs;
+    }
+
     @Override
     public boolean hasEffect() {
         return false;
@@ -29,6 +57,6 @@ public record BiExp(Var var, BiOp op, Ope lhs, Ope rhs) implements Instr {
 
     @Override
     public String toString() {
-        return var + " = " + op + " " + lhs + " " + rhs;
+        return super.toString() + var + " = " + op + " " + lhs + " " + rhs;
     }
 }

@@ -1,0 +1,14 @@
+int loopInv(int a, int b, int n) {
+    int i = 1;
+    int sum = 0;
+    int arr[44][55];
+    while (i <= n) {
+        sum = sum + arr[a][b];
+        i = i + 1;
+    }
+    return sum;
+}
+
+int main() {
+    return loopInv(1,3,10);
+}

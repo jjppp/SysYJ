@@ -3,9 +3,9 @@ package org.jjppp.ast.stmt;
 import org.jjppp.ast.ASTVisitor;
 import org.jjppp.ast.exp.Exp;
 
-public record While(Exp cond, Stmt body) implements Stmt {
-    public static While of(Exp cond, Stmt body) {
-        return new While(cond, body);
+public record DoWhile(Exp cond, Stmt body) implements Stmt {
+    public static DoWhile of(Exp cond, Stmt body) {
+        return new DoWhile(cond, body);
     }
 
     @Override

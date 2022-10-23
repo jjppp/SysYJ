@@ -8,7 +8,29 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public record Call(Var var, Fun.Signature fun, List<Ope> args) implements Instr {
+public final class Call extends Instr {
+    private final Var var;
+    private final Fun.Signature fun;
+    private final List<Ope> args;
+
+    public Call(Var var, Fun.Signature fun, List<Ope> args) {
+        this.var = var;
+        this.fun = fun;
+        this.args = args;
+    }
+
+    public Var var() {
+        return var;
+    }
+
+    public Fun.Signature fun() {
+        return fun;
+    }
+
+    public List<Ope> args() {
+        return args;
+    }
+
     @Override
     public boolean hasEffect() {
         return true;

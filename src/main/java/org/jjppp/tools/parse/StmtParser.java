@@ -1,5 +1,6 @@
 package org.jjppp.tools.parse;
 
+import org.jjppp.ast.exp.Exp;
 import org.jjppp.ast.exp.ValExp;
 import org.jjppp.ast.stmt.*;
 import org.jjppp.parser.SysYParser;
@@ -90,9 +91,9 @@ public final class StmtParser extends DefaultVisitor<Stmt> {
 
     @Override
     public Stmt visitWhileStmt(SysYParser.WhileStmtContext ctx) {
-        return While.of(
-                ExpParser.parse(ctx.exp()),
-                StmtParser.parse(ctx.stmt()));
+        Exp cond = ExpParser.parse(ctx.exp());
+        Stmt body = StmtParser.parse(ctx.stmt());
+        return If.of(cond, DoWhile.of(cond, body));
     }
 
     @Override

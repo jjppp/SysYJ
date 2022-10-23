@@ -8,7 +8,29 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record UnExp(Var var, UnOp op, Ope sub) implements Instr {
+public final class UnExp extends Instr {
+    private final Var var;
+    private final UnOp op;
+    private final Ope sub;
+
+    public UnExp(Var var, UnOp op, Ope sub) {
+        this.var = var;
+        this.op = op;
+        this.sub = sub;
+    }
+
+    public Var var() {
+        return var;
+    }
+
+    public UnOp op() {
+        return op;
+    }
+
+    public Ope sub() {
+        return sub;
+    }
+
     @Override
     public boolean hasEffect() {
         return false;
@@ -29,6 +51,6 @@ public record UnExp(Var var, UnOp op, Ope sub) implements Instr {
 
     @Override
     public String toString() {
-        return var + " = " + op + " " + sub;
+        return super.toString() + var + " = " + op + " " + sub;
     }
 }

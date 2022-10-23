@@ -7,10 +7,19 @@ import org.jjppp.ir.instr.InstrVisitor;
 import java.util.Collections;
 import java.util.Set;
 
-public record Jmp(Label target) implements Instr {
+public final class Jmp extends Instr {
+    private final Label target;
+
+    public Jmp(Label target) {
+        this.target = target;
+    }
 
     public static Jmp of(Label target) {
         return new Jmp(target);
+    }
+
+    public Label target() {
+        return target;
     }
 
     @Override

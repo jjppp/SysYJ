@@ -87,7 +87,7 @@ public interface ASTVisitor<R> {
         return visitDefault(stmt);
     }
 
-    default R visit(While stmt) {
+    default R visit(DoWhile stmt) {
         return visitDefault(stmt);
     }
 }

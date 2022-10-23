@@ -7,7 +7,30 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public record LibCall(Var var, LibFun libFun, List<Ope> args) implements Instr {
+public final class LibCall extends Instr {
+    private final Var var;
+    private final LibFun libFun;
+    private final List<Ope> args;
+
+    public LibCall(Var var, LibFun libFun, List<Ope> args) {
+        this.var = var;
+        this.libFun = libFun;
+        this.args = args;
+    }
+
+    @Override
+    public Var var() {
+        return var;
+    }
+
+    public LibFun libFun() {
+        return libFun;
+    }
+
+    public List<Ope> args() {
+        return args;
+    }
+
     @Override
     public boolean hasEffect() {
         return true;

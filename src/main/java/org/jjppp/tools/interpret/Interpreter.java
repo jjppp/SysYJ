@@ -130,6 +130,7 @@ public final class Interpreter implements InstrVisitor<Integer> {
         while (true) {
             INSTR_COUNT += 1;
             Instr instr = body.get(pc);
+            print(instr);
             if (instr instanceof Ret ret) {
                 if (ret.retVal() instanceof Var var) {
                     retVal = valOf(var);
@@ -371,6 +372,7 @@ public final class Interpreter implements InstrVisitor<Integer> {
                 }
                 return new Ptr(base, offset + delta.toInt().value());
             }
+            System.out.println(delta);
             throw new RuntimeException("");
         }
 

@@ -418,9 +418,9 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
     }
 
     @Override
-    public Result visit(While stmt) {
+    public Result visit(DoWhile stmt) {
+        Label lBody = LabelFactory.alloc("body");
         Label lCond = LabelFactory.alloc("cond");
-        Label lTru = LabelFactory.alloc("true");
         Label lFls = LabelFactory.alloc("false");
         contStack.add(lCond);
         breakStack.add(lFls);
@@ -429,12 +429,11 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         Result cond = transform(stmt.cond());
         Result body = transform(stmt.body());
 
+        result.add(lBody);
+        result.merge(body);
         result.add(lCond);
         result.merge(cond);
-        result.add(Br.of(cond.res(), lTru, lFls));
-        result.add(lTru);
-        result.merge(body);
-        result.add(Jmp.of(lCond));
+        result.add(Br.of(cond.res(), lBody, lFls));
         result.add(lFls);
         contStack.pop();
         breakStack.pop();

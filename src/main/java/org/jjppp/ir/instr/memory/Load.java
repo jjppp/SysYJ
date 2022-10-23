@@ -9,7 +9,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record Load(Var var, Ope loc) implements Instr {
+public final class Load extends Instr {
+    private final Var var;
+    private final Ope loc;
+
+    public Load(Var var, Ope loc) {
+        this.var = var;
+        this.loc = loc;
+    }
+
+    public Var var() {
+        return var;
+    }
+
+    public Ope loc() {
+        return loc;
+    }
+
     @Override
     public boolean hasEffect() {
         return false;

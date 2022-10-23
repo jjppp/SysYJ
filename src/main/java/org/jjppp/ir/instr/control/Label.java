@@ -7,7 +7,23 @@ import org.jjppp.ir.instr.InstrVisitor;
 import java.util.Collections;
 import java.util.Set;
 
-public record Label(String name, int id) implements Instr {
+public final class Label extends Instr {
+    private final String name;
+    private final int id;
+
+    public Label(String name, int id) {
+        this.name = name;
+        this.id = id;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public int id() {
+        return id;
+    }
+
     @Override
     public boolean hasEffect() {
         return true;

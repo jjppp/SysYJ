@@ -8,7 +8,17 @@ import org.jjppp.ir.instr.InstrVisitor;
 import java.util.Collections;
 import java.util.Set;
 
-public record Ret(Ope retVal) implements Instr {
+public final class Ret extends Instr {
+    private final Ope retVal;
+
+    public Ret(Ope retVal) {
+        this.retVal = retVal;
+    }
+
+    public Ope retVal() {
+        return retVal;
+    }
+
     @Override
     public boolean hasEffect() {
         return true;

@@ -253,7 +253,7 @@ public final class Print implements ASTVisitor<String> {
     }
 
     @Override
-    public String visit(While stmt) {
+    public String visit(DoWhile stmt) {
         if (stmt.body() instanceof Scope) {
             return "while (" + print(stmt.cond())
                     + ") " + print(stmt.body());

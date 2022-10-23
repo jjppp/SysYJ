@@ -6,9 +6,25 @@ import org.jjppp.ir.Var;
 import java.util.Collections;
 import java.util.Set;
 
-public record Ass(Var var, Ope rhs) implements Instr {
+public final class Ass extends Instr {
+    private final Var var;
+    private final Ope rhs;
+
+    public Ass(Var var, Ope rhs) {
+        this.var = var;
+        this.rhs = rhs;
+    }
+
     public static Ass of(Var var, Ope ope) {
         return new Ass(var, ope);
+    }
+
+    public Var var() {
+        return var;
+    }
+
+    public Ope rhs() {
+        return rhs;
     }
 
     @Override
@@ -31,6 +47,6 @@ public record Ass(Var var, Ope rhs) implements Instr {
 
     @Override
     public String toString() {
-        return var.type() + " " + var + " = " + rhs;
+        return super.toString() + var.type() + " " + var + " = " + rhs;
     }
 }

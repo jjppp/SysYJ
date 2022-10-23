@@ -6,9 +6,31 @@ import org.jjppp.ir.instr.InstrVisitor;
 
 import java.util.Set;
 
-public record Br(Var cond, Label sTru, Label sFls) implements Instr {
+public final class Br extends Instr {
+    private final Var cond;
+    private final Label sTru;
+    private final Label sFls;
+
+    public Br(Var cond, Label sTru, Label sFls) {
+        this.cond = cond;
+        this.sTru = sTru;
+        this.sFls = sFls;
+    }
+
     public static Br of(Var cond, Label sTru, Label sFls) {
         return new Br(cond, sTru, sFls);
+    }
+
+    public Var cond() {
+        return cond;
+    }
+
+    public Label sTru() {
+        return sTru;
+    }
+
+    public Label sFls() {
+        return sFls;
     }
 
     @Override

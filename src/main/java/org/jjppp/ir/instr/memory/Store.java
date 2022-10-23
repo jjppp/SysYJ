@@ -9,7 +9,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record Store(Var var, Ope rhs) implements Instr {
+public final class Store extends Instr {
+    private final Var var;
+    private final Ope rhs;
+
+    public Store(Var var, Ope rhs) {
+        this.var = var;
+        this.rhs = rhs;
+    }
+
+    public Var var() {
+        return var;
+    }
+
+    public Ope rhs() {
+        return rhs;
+    }
+
     @Override
     public boolean hasEffect() {
         return true;

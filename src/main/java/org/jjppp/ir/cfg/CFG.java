@@ -205,6 +205,7 @@ public final class CFG {
         public void setBlock(Block block) {
             blockNodeMap.remove(this.block);
             this.block = block;
+            block.setBelongTo(this);
             blockNodeMap.put(block, this);
         }
     }

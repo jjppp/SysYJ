@@ -2,13 +2,19 @@ package org.jjppp.ir.cfg;
 
 import org.jjppp.ir.Var;
 import org.jjppp.ir.instr.Instr;
+import org.jjppp.ir.instr.control.Br;
+import org.jjppp.ir.instr.control.Jmp;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public record Block(List<Instr> instrList) implements Iterable<Instr> {
+public final class Block implements Iterable<Instr> {
+    private final List<Instr> instrList;
+    private CFG.Node belongTo;
+
     public Block(List<Instr> instrList) {
         this.instrList = new ArrayList<>(instrList);
+        instrList.forEach(instr -> instr.setBelongTo(this));
     }
 
     public static Block empty() {
@@ -17,6 +23,19 @@ public record Block(List<Instr> instrList) implements Iterable<Instr> {
 
     public static Block of(Instr instr) {
         return new Block(List.of(instr));
+    }
+
+    public List<Instr> instrList() {
+        return instrList;
+    }
+
+    public CFG.Node belongTo() {
+        return belongTo;
+    }
+
+    public void setBelongTo(CFG.Node belongTo) {
+        Objects.requireNonNull(belongTo);
+        this.belongTo = belongTo;
     }
 
     @Override
@@ -30,8 +49,27 @@ public record Block(List<Instr> instrList) implements Iterable<Instr> {
         return false;
     }
 
+    public void prepend(Instr instr) {
+        if (lastInstr() instanceof Br || lastInstr() instanceof Jmp) {
+            instrList.add(0, instr);
+        } else {
+            instrList.add(instr);
+        }
+        instr.setBelongTo(this);
+    }
+
     public void add(Instr instr) {
         instrList.add(instr);
+        instr.setBelongTo(this);
+    }
+
+    public void removeInv() {
+        List<Instr> invs = instrList().stream()
+                .filter(Instr::isInv).toList();
+        invs.forEach(instr -> {
+            instrList().remove(instr);
+            instr.setInv(false);
+        });
     }
 
     public Instr lastInstr() {
