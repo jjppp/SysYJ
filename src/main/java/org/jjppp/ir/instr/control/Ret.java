@@ -30,11 +30,6 @@ public final class Ret extends Instr {
     }
 
     @Override
-    public Var var() {
-        return null;
-    }
-
-    @Override
     public Set<Var> useSet() {
         if (retVal instanceof Var var) {
             return Set.of(var);

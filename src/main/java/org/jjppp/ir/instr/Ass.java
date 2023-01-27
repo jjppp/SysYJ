@@ -6,21 +6,16 @@ import org.jjppp.ir.Var;
 import java.util.Collections;
 import java.util.Set;
 
-public final class Ass extends Instr {
-    private final Var var;
+public final class Ass extends Def {
     private final Ope rhs;
 
     public Ass(Var var, Ope rhs) {
-        this.var = var;
+        super(var);
         this.rhs = rhs;
     }
 
     public static Ass of(Var var, Ope ope) {
         return new Ass(var, ope);
-    }
-
-    public Var var() {
-        return var;
     }
 
     public Ope rhs() {
@@ -47,6 +42,6 @@ public final class Ass extends Instr {
 
     @Override
     public String toString() {
-        return super.toString() + var.type() + " " + var + " = " + rhs;
+        return super.toString() + var().type() + " " + var() + " = " + rhs;
     }
 }

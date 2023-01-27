@@ -8,19 +8,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class UnExp extends Instr {
-    private final Var var;
+public final class UnExp extends Def {
     private final UnOp op;
     private final Ope sub;
 
     public UnExp(Var var, UnOp op, Ope sub) {
-        this.var = var;
+        super(var);
         this.op = op;
         this.sub = sub;
-    }
-
-    public Var var() {
-        return var;
     }
 
     public UnOp op() {
@@ -51,6 +46,6 @@ public final class UnExp extends Instr {
 
     @Override
     public String toString() {
-        return super.toString() + var + " = " + op + " " + sub;
+        return super.toString() + var() + " = " + op + " " + sub;
     }
 }

@@ -33,11 +33,6 @@ public final class Jmp extends Instr {
     }
 
     @Override
-    public Var var() {
-        return null;
-    }
-
-    @Override
     public Set<Var> useSet() {
         return Collections.emptySet();
     }

@@ -2,24 +2,19 @@ package org.jjppp.ir.instr.memory;
 
 import org.jjppp.ir.Ope;
 import org.jjppp.ir.Var;
-import org.jjppp.ir.instr.Instr;
+import org.jjppp.ir.instr.Def;
 import org.jjppp.ir.instr.InstrVisitor;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class Load extends Instr {
-    private final Var var;
+public final class Load extends Def {
     private final Ope loc;
 
     public Load(Var var, Ope loc) {
-        this.var = var;
+        super(var);
         this.loc = loc;
-    }
-
-    public Var var() {
-        return var;
     }
 
     public Ope loc() {
@@ -38,7 +33,7 @@ public final class Load extends Instr {
 
     @Override
     public Set<Var> useSet() {
-        return Stream.of(var, loc)
+        return Stream.of(var(), loc)
                 .filter(Var.class::isInstance)
                 .map(Var.class::cast)
                 .collect(Collectors.toSet());
@@ -46,6 +41,6 @@ public final class Load extends Instr {
 
     @Override
     public String toString() {
-        return var + " = " + "*" + loc;
+        return var() + " = " + "*" + loc;
     }
 }

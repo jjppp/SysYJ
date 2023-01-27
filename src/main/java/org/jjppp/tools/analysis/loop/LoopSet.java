@@ -5,6 +5,7 @@ import org.jjppp.ir.cfg.CFG;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class LoopSet implements Iterable<CFG.Node> {
     private final Set<CFG.Node> nodeSet = new HashSet<>();
@@ -17,6 +18,12 @@ public final class LoopSet implements Iterable<CFG.Node> {
 
     public CFG.Node getHeader() {
         return header;
+    }
+
+    public Set<CFG.Node> getExits() {
+        return nodeSet.stream()
+                .filter(node -> node.getSucc().stream().anyMatch(x -> !contains(x)))
+                .collect(Collectors.toSet());
     }
 
     public void add(CFG.Node node) {

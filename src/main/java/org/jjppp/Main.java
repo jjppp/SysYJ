@@ -53,7 +53,7 @@ public class Main {
 
             for (var loop : loops) {
                 for (var node : loop) {
-                    LoopInv inv = new LoopInv(node, loop, reach.get(node));
+                    LoopInv inv = new LoopInv(node, loop, reach.get(node), doms);
                     inv.mark();
                 }
             }

@@ -8,7 +8,6 @@ import org.jjppp.ir.instr.memory.Alloc;
 import org.jjppp.ir.instr.memory.GAlloc;
 import org.jjppp.ir.instr.memory.LAlloc;
 
-import java.util.Optional;
 import java.util.Set;
 
 public abstract class Instr {
@@ -51,12 +50,6 @@ public abstract class Instr {
     }
 
     public abstract Set<Var> useSet();
-
-    public Optional<Var> defSet() {
-        return Optional.ofNullable(var());
-    }
-
-    public abstract Var var();
 
     public int index() {
         return belongTo().instrList().indexOf(this);

@@ -13,12 +13,11 @@ public final class FloatType implements BaseType {
     }
 
     public static FloatType of(boolean isConst) {
-        throw new AssertionError("TODO");
-        /*if (isConst) {
+        if (isConst) {
             return ofConst();
         } else {
             return ofNonConst();
-        }*/
+        }
     }
 
     public static FloatType ofConst() {

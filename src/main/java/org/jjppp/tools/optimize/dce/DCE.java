@@ -4,6 +4,7 @@ import org.jjppp.ir.Var;
 import org.jjppp.ir.cfg.Block;
 import org.jjppp.ir.cfg.CFG;
 import org.jjppp.ir.cfg.CFG.Node;
+import org.jjppp.ir.instr.Def;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -33,7 +34,14 @@ public final class DCE {
     private static Block doDCE(CFG cfg, Block block) {
         Set<Var> useSet = cfg.useSet();
         return new Block(block.instrList().stream()
-                .filter(instr -> useSet.contains(instr.var()) || instr.hasEffect())
+                .filter(instr -> {
+                    if (instr.hasEffect()) {
+                        return true;
+                    } else if (instr instanceof Def def) {
+                        return useSet.contains(def.var());
+                    }
+                    return false;
+                })
                 .collect(Collectors.toList()));
     }
 

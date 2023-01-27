@@ -114,8 +114,7 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
         if (decl.isGlobal()) {
             throw new AssertionError("TODO");
         } else {
-            Var tmp = new Var(decl, Loc.from(decl), -1);
-            result.add(LAlloc.from(tmp, decl));
+            result.add(LAlloc.from(Var.from(decl), decl));
         }
         return result;
     }
@@ -290,10 +289,10 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             if (i != 0) {
                 curType = ((ArrType) curType).subType();
                 int width = ((ArrType) curType).length();
-                var def1 = result.alloc(BaseType.Int.Type(),
+                var def = result.alloc(BaseType.Int.Type(),
                         BiOp.MUL, last, Int.from(width));
                 result.alloc(BaseType.Int.Type(),
-                        BiOp.ADD, def1, ith.res());
+                        BiOp.ADD, def, ith.res());
             }
         }
         return result;
@@ -485,7 +484,10 @@ public final class Transform3AC implements ASTVisitor<Transform3AC.Result> {
             if (block.isEmpty()) {
                 return null;
             }
-            return block.get(block.size() - 1).var();
+            if (block.get(block.size() - 1) instanceof Def def) {
+                return def.var();
+            }
+            return null;
         }
 
         public void add(Instr instr) {

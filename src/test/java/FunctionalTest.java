@@ -15,17 +15,8 @@ public final class FunctionalTest {
     private final static Set<String> skipFiles = Set.of(
             "04_arr_defn3.sy",
             "05_arr_defn4.sy",
-            "40_unary_op.sy",
-            "41_unary_op2.sy",
-            "44_stmt_expr.sy",
-            "52_scope.sy",
-            "53_scope2.sy",
             "86_long_code2.sy",
             "95_float.sy",
-            "96_matrix_add.sy",
-            "97_matrix_sub.sy",
-            "98_matrix_mul.sy",
-            "99_matrix_tran.sy",
 
             "07_arr_init_nd.sy",
             "08_global_arr_init.sy"

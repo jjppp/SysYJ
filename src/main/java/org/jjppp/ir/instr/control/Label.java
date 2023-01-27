@@ -35,11 +35,6 @@ public final class Label extends Instr {
     }
 
     @Override
-    public Var var() {
-        return null;
-    }
-
-    @Override
     public Set<Var> useSet() {
         return Collections.emptySet();
     }

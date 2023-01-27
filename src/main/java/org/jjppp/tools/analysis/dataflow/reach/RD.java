@@ -1,8 +1,8 @@
 package org.jjppp.tools.analysis.dataflow.reach;
 
 import org.jjppp.ir.Fun;
-import org.jjppp.ir.Var;
 import org.jjppp.ir.cfg.CFG;
+import org.jjppp.ir.instr.Def;
 import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.instr.InstrVisitor;
 import org.jjppp.tools.analysis.dataflow.DFA;
@@ -47,11 +47,10 @@ public final class RD extends DFA<RDData> implements InstrVisitor<RDData> {
 
     @Override
     protected RDData transfer(Instr instr, RDData dataIn) {
-        dataIn = new RDData(dataIn);
-        Var var = instr.var();
-        if (var != null) {
-            dataIn.clear(var);
-            dataIn.put(var, instr);
+        if (instr instanceof Def def) {
+            dataIn = new RDData(dataIn);
+            dataIn.clear(def.var());
+            dataIn.put(def.var(), instr);
         }
         return dataIn;
     }

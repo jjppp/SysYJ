@@ -142,7 +142,7 @@ public final class CP extends DFA<CPData> implements InstrVisitor<CPData> {
     @Override
     protected void init() {
         List<Var> args = new ArrayList<>(cfg.fun().args());
-        Set<Var> varSet = new HashSet<>(cfg.defSet());
+        Set<Var> varSet = new HashSet<>(cfg.defVars());
 
         Map<Var, CPData.CPFact> emptyMap = new HashMap<>();
         varSet.forEach(var -> emptyMap.put(var, CPData.CPFact.UNDEF));

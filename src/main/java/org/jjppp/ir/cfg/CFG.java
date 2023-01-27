@@ -41,16 +41,12 @@ public final class CFG {
             builder.append(node.block().toString())
                     .append("\"];\n");
         }
-        for (var edge : edges()) {
-            Node from = edge.from();
-            Node to = edge.to();
-            builder.append(from.id())
-                    .append(" -> ")
-                    .append(to.id())
-                    .append("[label=")
-                    .append(edge.type())
-                    .append("];\n");
-        }
+        edges().forEach(edge -> builder.append(edge.from().id())
+                .append(" -> ")
+                .append(edge.to().id())
+                .append("[label=")
+                .append(edge.type())
+                .append("];\n"));
         return builder.append("}").toString();
     }
 
@@ -91,10 +87,10 @@ public final class CFG {
                 .collect(Collectors.toSet());
     }
 
-    public Set<Var> defSet() {
+    public Set<Var> defVars() {
         return nodes().stream()
                 .map(Node::block)
-                .map(Block::defSet)
+                .map(Block::defVars)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
     }

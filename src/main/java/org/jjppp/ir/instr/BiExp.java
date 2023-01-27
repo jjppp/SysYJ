@@ -8,21 +8,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class BiExp extends Instr {
-    private final Var var;
+public final class BiExp extends Def {
     private final BiOp op;
     private final Ope lhs;
     private final Ope rhs;
 
     public BiExp(Var var, BiOp op, Ope lhs, Ope rhs) {
-        this.var = var;
+        super(var);
         this.op = op;
         this.lhs = lhs;
         this.rhs = rhs;
-    }
-
-    public Var var() {
-        return var;
     }
 
     public BiOp op() {
@@ -57,6 +52,6 @@ public final class BiExp extends Instr {
 
     @Override
     public String toString() {
-        return super.toString() + var + " = " + op + " " + lhs + " " + rhs;
+        return super.toString() + var() + " = " + op + " " + lhs + " " + rhs;
     }
 }

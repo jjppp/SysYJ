@@ -1,6 +1,7 @@
 package org.jjppp.ir.cfg;
 
 import org.jjppp.ir.Var;
+import org.jjppp.ir.instr.Def;
 import org.jjppp.ir.instr.Instr;
 import org.jjppp.ir.instr.control.Br;
 import org.jjppp.ir.instr.control.Jmp;
@@ -34,15 +35,12 @@ public final class Block implements Iterable<Instr> {
     }
 
     public void setBelongTo(CFG.Node belongTo) {
-        Objects.requireNonNull(belongTo);
-        this.belongTo = belongTo;
+        this.belongTo = Objects.requireNonNull(belongTo);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
+        if (o == this) return true;
         if (o instanceof Block block) {
             return instrList().equals(block.instrList());
         }
@@ -83,10 +81,11 @@ public final class Block implements Iterable<Instr> {
                 .collect(Collectors.toSet());
     }
 
-    public Set<Var> defSet() {
+    public Set<Var> defVars() {
         return instrList.stream()
-                .map(Instr::defSet)
-                .flatMap(Optional::stream)
+                .filter(Def.class::isInstance)
+                .map(Def.class::cast)
+                .map(Def::var)
                 .collect(Collectors.toSet());
     }
 

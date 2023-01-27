@@ -52,9 +52,4 @@ public final class Br extends Instr {
     public Set<Var> useSet() {
         return Set.of(cond);
     }
-
-    @Override
-    public Var var() {
-        return null;
-    }
 }

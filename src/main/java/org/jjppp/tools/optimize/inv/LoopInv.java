@@ -9,20 +9,25 @@ import org.jjppp.runtime.Val;
 import org.jjppp.tools.analysis.dataflow.reach.RDData;
 import org.jjppp.tools.analysis.loop.LoopSet;
 
+import java.util.Map;
+import java.util.Set;
+
 public final class LoopInv implements InstrVisitor<Boolean> {
     private final CFG.Node node;
     private final LoopSet loop;
     private final RDData reach;
+    private final Map<CFG.Node, Set<CFG.Node>> doms;
 
-    public LoopInv(CFG.Node node, LoopSet loop, RDData reach) {
+    public LoopInv(CFG.Node node, LoopSet loop, RDData reach, Map<CFG.Node, Set<CFG.Node>> doms) {
         this.node = node;
         this.loop = loop;
         this.reach = new RDData(reach);
+        this.doms = doms;
     }
 
     private void transfer(Instr instr) {
-        Var var = instr.var();
-        if (var != null) {
+        if (instr instanceof Def def) {
+            Var var = def.var();
             reach.clear(var);
             reach.put(var, instr);
         }
@@ -33,8 +38,17 @@ public final class LoopInv implements InstrVisitor<Boolean> {
             instr.setInv(isInv(instr));
             transfer(instr);
         }
+        for (Instr instr : node.block()) {
+            if (!instr.isInv()) {
+                continue;
+            }
+            if (!loop.getExits().stream()
+                    .allMatch(x -> doms.get(x).contains(node))) {
+                continue;
+            }
+            
+        }
         /* TODO: BUG FIX
-        List<Instr> invs = node.block().instrList().stream().filter(Instr::isInv).toList();
         node.block().removeInv();
         for (int i = invs.size() - 1; i >= 0; --i) {
             Instr instr = invs.get(i);

@@ -7,20 +7,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public final class LibCall extends Instr {
-    private final Var var;
+public final class LibCall extends Def {
     private final LibFun libFun;
     private final List<Ope> args;
 
     public LibCall(Var var, LibFun libFun, List<Ope> args) {
-        this.var = var;
+        super(var);
         this.libFun = libFun;
         this.args = args;
-    }
-
-    @Override
-    public Var var() {
-        return var;
     }
 
     public LibFun libFun() {
@@ -51,6 +45,6 @@ public final class LibCall extends Instr {
 
     @Override
     public String toString() {
-        return var + " = call @" + libFun().name() + " " + args;
+        return var() + " = call @" + libFun().name() + " " + args;
     }
 }

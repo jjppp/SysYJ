@@ -8,19 +8,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public final class Call extends Instr {
-    private final Var var;
+public final class Call extends Def {
     private final Fun.Signature fun;
     private final List<Ope> args;
 
     public Call(Var var, Fun.Signature fun, List<Ope> args) {
-        this.var = var;
+        super(var);
         this.fun = fun;
         this.args = args;
-    }
-
-    public Var var() {
-        return var;
     }
 
     public Fun.Signature fun() {
@@ -51,6 +46,6 @@ public final class Call extends Instr {
 
     @Override
     public String toString() {
-        return var + " = call @" + fun.name() + " " + args;
+        return var() + " = call @" + fun.name() + " " + args;
     }
 }
